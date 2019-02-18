@@ -30,14 +30,6 @@ MongoClient.connect(uri, {
   console.log(dbo);
 });
 
-<<<<<<< HEAD
-// Reuse database object in request handlers
-app.get("/", function(req, res) {
-  dbo.collection('character').find({}).toArray(function(err, val) {
-    if (err) res.send(err);
-    console.log(val);
-    res.json(val);
-=======
 
 io.on('connection', function(socket) {
   console.log('a user connected');
@@ -86,6 +78,5 @@ io.on('connection', function(socket) {
 
   socket.on('disconnect', function (socket) {
     console.log("A client has disconnected!");
->>>>>>> ea0541145783c164edd41da39047db340479d4f8
   });
 });
