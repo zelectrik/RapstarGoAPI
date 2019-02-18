@@ -7,6 +7,9 @@ var uri = "mongodb://127.0.0.1:27017/";
 
 var dbo;
 
+
+var dbName = "rapstargo-test";
+
 MongoClient.connect(uri, {
   useNewUrlParser: true,
   server : {
@@ -14,7 +17,7 @@ MongoClient.connect(uri, {
   }
 }, function(err, db) {
   if (err) throw err;
-  dbo = db.db("local");
+  dbo = db.db(dbName);
 
   app.listen(3000);
   console.log("Listening on port 3000.");
@@ -24,8 +27,8 @@ MongoClient.connect(uri, {
 // Reuse database object in request handlers
 app.get("/", function(req, res) {
   dbo.collection('character').find({}).toArray(function(err, val) {
-    if (err) throw err;
-    console.log(val[0].abilities);
-    res.end();
+    if (err) res.send(err);
+    console.log(val);
+    res.json(val);
   });
 });
