@@ -35,9 +35,11 @@ io.on('connection', function(socket) {
   console.log('a user connected');
 
 
+  /* Login Function */
   socket.on('login', function(data) {
     dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
       if (err) console.log(err);
+      /* Permit to disconnect user if use this socket for test */
       if(val != null && val.pseudo != data.pseudo)
       {
         dbo.collection('user').updateOne(val, {$set : {socket_id : ""}},{}, function(err) {
@@ -45,22 +47,41 @@ io.on('connection', function(socket) {
           console.log("Disconnect from " + val.pseudo);
         });
       }
+
+      /* Check if login and password are good */
       dbo.collection('user').findOne({pseudo : data.pseudo, password : data.password}, function(err, val) {
         if (err) console.log(err);
+        /*Wrong connection*/
         if(val == null)
         {
           console.log("Mauvais pseudo ou mot de passe.");
-          socket.emit('message', {message : "Mauvais pseudo ou mot de passe."});
-        } else {
+          socket.emit('loginResult', {
+            success : false,
+            body : {
+              message : "Mauvais pseudo ou mot de passe."
+            }});
+        }
+        /*Good connection*/
+        else {
           dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
             if(err) console.log(err);
             console.log("Connect to " + val.pseudo);
-            socket.emit('message', {message : "Connect to " + val.pseudo});
+            socket.emit('loginResult', {
+              success : true,
+              body : {
+                message : "Connect to " + val.pseudo,
+                socket_id : socket.id
+              }});
           });
         }
       });
     });
   });
+
+  socket.on('reconnection', function(data) {
+
+  });
+
 
   socket.on('loggedAccount', function() {
     dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
