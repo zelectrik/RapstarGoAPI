@@ -100,7 +100,7 @@ io.on('connection', function(socket) {
         socket.emit('loggedAccountResult', {
             success : true,
             body : {
-              message : Connected to ' + val.pseudo
+              message : "Connected to " + val.pseudo
             }});
       }
     });
