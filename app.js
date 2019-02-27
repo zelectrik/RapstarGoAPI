@@ -90,10 +90,18 @@ io.on('connection', function(socket) {
       if(val == null)
       {
         console.log("Connecté à aucun compte.");
-        socket.emit("message", {message : 'Not connected.'});
+        socket.emit('loggedAccountResult', {
+            success : false,
+            body : {
+              message : "Not connected."
+            }});
       } else {
         console.log("Connecté à " + val.pseudo);
-        socket.emit("message", {message : 'Connected to ' + val.pseudo});
+        socket.emit('loggedAccountResult', {
+            success : true,
+            body : {
+              message : Connected to ' + val.pseudo
+            }});
       }
     });
   });
