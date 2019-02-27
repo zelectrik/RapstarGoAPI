@@ -80,6 +80,30 @@ io.on('connection', function(socket) {
   });
 
   socket.on('reconnection', function(data) {
+    dbo.collection('user').findOne({pseudo : data.pseudo ,socket_id : data.socket_id}, function(err, val) {
+      if (err) console.log(err);
+      /* Permit to disconnect user if use this socket for test */
+      if(val != null)
+      {
+        dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
+          if(err) console.log(err);
+          console.log("Reconnection from " + val.pseudo);
+          socket.emit('reconnectionResult', {
+            success : true,
+            body : {
+              message : "Connect to " + val.pseudo,
+              socket_id : socket.id
+            }});
+        });
+      } else {
+        console.log("Can't reconnect ");
+        socket.emit('reconnectionResult', {
+          success : false,
+          body : {
+            message : "Can't reconnect."
+          }});
+      }
+    });
       console.log(data);
   });
 
