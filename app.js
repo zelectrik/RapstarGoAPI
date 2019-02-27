@@ -45,7 +45,7 @@ io.on('connection', function(socket) {
   });
 
 
-  socket.on('loggedAccount', function() {
+  socket.on('loggedAccount', function(data) {
     loggedAccount(data, socket)
   });
 
