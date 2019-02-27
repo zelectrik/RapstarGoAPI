@@ -70,7 +70,8 @@ io.on('connection', function(socket) {
               success : true,
               body : {
                 message : "Connect to " + val.pseudo,
-                socket_id : socket.id
+                socket_id : socket.id,
+                pseudo : val.pseudo
               }});
           });
         }
@@ -79,7 +80,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('reconnection', function(data) {
-
+      console.log(data);
   });
 
 
