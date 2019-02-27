@@ -62,16 +62,16 @@ io.on('connection', function(socket) {
     });
   });
 
-  socket.on('loggedAccount', function() {
+  socket.on('loggedAccount', function(data) {
     dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
       if (err) console.log(err);
       if(val == null)
       {
         console.log("Connecté à aucun compte.");
-        socket.emit("message", {message : 'Not connected.'});
+        socket.emit('message', {messloggedAccountage : "Connecté à aucun compte."});
       } else {
         console.log("Connecté à " + val.pseudo);
-        socket.emit("message", {message : 'Connected to ' + val.pseudo});
+        socket.emit('message', {message : "Connecté à " + val.pseudo});
       }
     });
   });
