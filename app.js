@@ -87,7 +87,7 @@ io.on('connection', function(socket) {
         success : true,
         body : {
           new_socket_id : false,
-          message : "Connect to " + val.pseudo
+          message : "Not needed reconnection"
         }});
     } else {
       dbo.collection('user').findOne({pseudo : data.pseudo ,socket_id : data.socket_id}, function(err, val) {
