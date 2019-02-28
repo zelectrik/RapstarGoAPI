@@ -65,27 +65,40 @@ io.on('connection', function(socket) {
 function createAccount(data, socket)
 {
   console.log(data);
-  if(data.password == undefined || data.password == "")
+  if(data.password == undefined || data.password == "") // Check if password is enter
   {
     socket.emit('createAccountResult', {
       success : false,
       body : {
-        message : "No password enter"
+        message : "Incorrect password."
       }});
-  } else if (data.pseudo == undefined || data.pseudo == "") {
+  } else if (data.pseudo == undefined || data.pseudo == "") { // Check if pseudo is enter
     socket.emit('createAccountResult', {
       success : false,
       body : {
-        message : "No pseudo enter"
+        message : "Incorrect pseudo."
       }});
   } else {
-    socket.emit('createAccountResult', {
-      success : true,
-      body : {
-        message : "Account created",
-        pseudo : data.pseudo,
-        socket_id : socket.id
-      }});
+    dbo.collection('user').findOne({pseudo : data.pseudo}, function(err, val) {
+      if (err) console.log(err);
+      /* Permit to disconnect user if use this socket for test */
+      if(val != null)
+      {
+        socket.emit('createAccountResult', {
+          success : false,
+          body : {
+            message : "Pseudo already existing"
+          }});
+      } else {
+        socket.emit('createAccountResult', {
+          success : true,
+          body : {
+            message : "Account created",
+            pseudo : data.pseudo,
+            socket_id : socket.id
+          }});
+      }
+    });
   }
 }
 
