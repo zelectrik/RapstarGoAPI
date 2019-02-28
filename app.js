@@ -235,7 +235,7 @@ function disconnectUser(socket_id, message, reset_socket_id)
         body : {
           message : message
         }});
-    }
+    });
   } else {
     io.to(socket_id).emit('disconnect', {
       success : true,
