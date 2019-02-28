@@ -49,7 +49,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('disconnectUser', function(data) {
-    disconnectUser(socket.id, "Button dsiconnect press."); // emit : loginResult
+    disconnectUser(socket.id, "Button dsiconnect press.", true); // emit : loginResult
   });
   /* End Login Function */
 
@@ -224,11 +224,23 @@ function loggedAccount(data, socket)
   });
 }
 
-function disconnectUser(socket_id, message)
+function disconnectUser(socket_id, message, reset_socket_id)
 {
-  io.to(socket_id).emit('disconnect', {
-    success : true,
-    body : {
-      message : message
-    }});
+  if(reset_socket_id)
+  {
+    dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
+      if(err) console.log(err);
+      io.to(socket_id).emit('disconnect', {
+        success : true,
+        body : {
+          message : message
+        }});
+    }
+  } else {
+    io.to(socket_id).emit('disconnect', {
+      success : true,
+      body : {
+        message : message
+      }});
+  }
 }
