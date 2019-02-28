@@ -63,6 +63,10 @@ function login(data, socket)
     /* Permit to disconnect user if use this socket for test */
     if(val != null && val.pseudo != data.pseudo)
     {
+      io.clients((error, clients) => {
+        if (error) throw error;
+        console.log(clients);
+      });
       dbo.collection('user').updateOne(val, {$set : {socket_id : ""}},{}, function(err) {
         if(err) console.log(err);
         console.log("Disconnect from " + val.pseudo);
