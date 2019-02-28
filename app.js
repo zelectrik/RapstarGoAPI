@@ -47,6 +47,10 @@ io.on('connection', function(socket) {
     /* debug function */
     loggedAccount(data, socket); // emit : loggedAccountResult
   });
+
+  socket.on('disconnectUser', function(data) {
+    disconnectUser(socket.id, "Button dsiconnect press."); // emit : loginResult
+  });
   /* End Login Function */
 
   /* Start Create account function */
