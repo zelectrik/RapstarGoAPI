@@ -30,7 +30,6 @@ MongoClient.connect(uri, {
   console.log(dbo);
 });
 
-
 io.on('connection', function(socket) {
   console.log('a user connected');
 
@@ -53,7 +52,6 @@ io.on('connection', function(socket) {
   /* Start Create account function */
 
   socket.on('createAccount', function(data) {
-    console.log(data);
     createAccount(data, socket); // emit : createAccountResult
   });
 
@@ -67,14 +65,14 @@ io.on('connection', function(socket) {
 function createAccount(data, socket)
 {
   console.log(data);
-  if(data.password == NULL || data.password == "")
+  if(data.password == undefined || data.password == "")
   {
     socket.emit('createAccountResult', {
       success : false,
       body : {
         message : "No password enter"
       }});
-  } else if (data.pseudo == NULL || data.pseudo == "") {
+  } else if (data.pseudo == undefined || data.pseudo == "") {
     socket.emit('createAccountResult', {
       success : false,
       body : {
