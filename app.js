@@ -86,10 +86,7 @@ function login(data, socket)
       else {
         if(val.socket_id != "" && val.socket_id != socket.id)
         {
-          io.clients((error, clients) => {
-            if (error) throw error;
-            console.log(clients);
-          });
+          disconnectUser(val.socket_id, "An other user connect to this account.");
         }
         dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
           if(err) console.log(err);
@@ -168,4 +165,13 @@ function loggedAccount(data, socket)
           }});
     }
   });
+}
+
+function disconnectUser(socket_id, message)
+{
+  io.to(socket_id).emit('disconnect', {
+    success : true,
+    body : {
+      message : message
+    }});
 }
