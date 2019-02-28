@@ -53,6 +53,7 @@ io.on('connection', function(socket) {
   /* Start Create account function */
 
   socket.on('createAccount', function(data) {
+    console.log(data);
     createAccount(data, socket); // emit : createAccountResult
   });
 
