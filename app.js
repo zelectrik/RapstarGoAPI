@@ -65,6 +65,7 @@ io.on('connection', function(socket) {
 
 function createAccount(data, socket)
 {
+  console.log(data);
   if(data.password == NULL || data.password == "")
   {
     socket.emit('createAccountResult', {
