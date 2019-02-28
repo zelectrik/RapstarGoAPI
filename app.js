@@ -90,13 +90,20 @@ function createAccount(data, socket)
             message : "Pseudo already existing"
           }});
       } else {
-        socket.emit('createAccountResult', {
-          success : true,
-          body : {
-            message : "Account created",
-            pseudo : data.pseudo,
-            socket_id : socket.id
-          }});
+        dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id}, function(err) {
+          if(err)
+          {
+            console.log(err);
+          } else {
+            socket.emit('createAccountResult', {
+              success : true,
+              body : {
+                message : "Account created",
+                pseudo : data.pseudo,
+                socket_id : socket.id
+              }});
+          }
+        });
       }
     });
   }
