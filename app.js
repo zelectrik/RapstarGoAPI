@@ -35,26 +35,59 @@ io.on('connection', function(socket) {
   console.log('a user connected');
 
 
-  /* Login Function */
+  /* Start Login Function */
   socket.on('login', function(data) {
-    login(data, socket);
+    login(data, socket); // emit : loginResult
   });
 
   socket.on('reconnection', function(data) {
-    reconnection(data, socket)
+    reconnection(data, socket); // emit : reconnectionResult
   });
-
 
   socket.on('loggedAccount', function(data) {
-    loggedAccount(data, socket)
+    /* debug function */
+    loggedAccount(data, socket); // emit : loggedAccountResult
   });
+  /* End Login Function */
+
+  /* Start Create account function */
+
+  socket.on('createAccount', function(data) {
+    createAccount(data, socket); // emit : createAccountResult
+  });
+
+  /* End Create account function */
 
   socket.on('disconnect', function (socket) {
     console.log("A client has disconnected!");
   });
 });
 
-
+function createAccount(data, socket)
+{
+  if(data.password == NULL || data.password == "")
+  {
+    socket.emit('createAccountResult', {
+      success : false,
+      body : {
+        message : "No password enter"
+      }});
+  } else if (data.pseudo == NULL || data.pseudo == "") {
+    socket.emit('createAccountResult', {
+      success : false,
+      body : {
+        message : "No pseudo enter"
+      }});
+  } else {
+    socket.emit('createAccountResult', {
+      success : true,
+      body : {
+        message : "Account created",
+        pseudo : data.pseudo,
+        socket_id : socket.id
+      }});
+  }
+}
 
 function login(data, socket)
 {
