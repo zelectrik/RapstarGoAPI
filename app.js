@@ -260,8 +260,8 @@ function disconnectUser(socket_id, message, reset_socket_id)
 
 function CheckAndCreateCharacter(data, socket)
 {
-  if(data.name == undefined || data.name == "")
   {
+    if(data.name == undefined || data.name == "")
     socket.emit('createCharacterResult', {
         success : false,
         body : {
@@ -293,7 +293,8 @@ function CheckAndCreateCharacter(data, socket)
           socket.emit('createCharacterResult', {
               success : true,
               body : {
-                character_list : val.character_list
+                character_list : val.character_list,
+                message : "Character created."
               }});
         });
       }
@@ -313,8 +314,8 @@ function CreateCharacter(_name = "Nom", _classId = 0)
     lClass = mClassesData[0];
   }
 
-  lCharacter.life = mClass.initialLife;
-  lCharacter.damage = mClass.initialDamage;
+  lCharacter.life = lClass.initialLife;
+  lCharacter.damage = lClass.initialDamage;
   lCharacter.abilities = [];
 
   lClass.Abilities.forEach(function(_ability) {
