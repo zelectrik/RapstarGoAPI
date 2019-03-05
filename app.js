@@ -4,16 +4,20 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongo = require('mongodb');
+var fs = require('fs');
+
+/* Load json files needed */
+// Get content from file
+ var classesContents = fs.readFileSync("characterClass.json");
+// Define to JSON type
+ var mClassesData = JSON.parse(classesContents);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 var MongoClient = require('mongodb').MongoClient;
 var uri = "mongodb://127.0.0.1:27017/";
-
 var dbo;
-
-
 var dbName = "rapstargo-test";
 
 MongoClient.connect(uri, {
@@ -61,6 +65,15 @@ io.on('connection', function(socket) {
 
   /* End Create account function */
 
+
+  /* Start character function */
+
+  socket.on('createCharacter', function(data) {
+    CheckAndCreateCharacter(data, socket); // emit : createCharacterResult
+  });
+
+  /* End character function */
+
   socket.on('disconnect', function (socket) {
     console.log("A client has disconnected!");
   });
@@ -94,7 +107,7 @@ function createAccount(data, socket)
             message : "Pseudo already existing"
           }});
       } else {
-        dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id}, function(err) {
+        dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : []}, function(err) {
           if(err)
           {
             console.log(err);
@@ -243,4 +256,73 @@ function disconnectUser(socket_id, message, reset_socket_id)
         message : message
       }});
   }
+}
+
+function CheckAndCreateCharacter(data, socket)
+{
+  if(data.name == undefined || data.name == "")
+  {
+    socket.emit('createCharacterResult', {
+        success : false,
+        body : {
+          message : "Wrong character name."
+        }});
+  } else if(data.classId == undefined || data.classId == "") {
+    socket.emit('createCharacterResult', {
+        success : false,
+        body : {
+          message : "Class not selected."
+        }});
+  } else {
+    dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
+      if (err) console.log(err);
+      if(val == null)
+      {
+        console.log("Connecté à aucun compte.");
+        socket.emit('createCharacterResult', {
+            success : false,
+            body : {
+              message : "Not connected, can't create character."
+            }});
+      } else {
+        val.character_list.add(CreateCharacter(data.name, data.classId));
+
+        dbo.collection('user').updateOne(val, {$set : {character_list : val.character_list}},{}, function(err) {
+          if(err) console.log(err);
+          console.log("Character list " + val.character_list);
+          socket.emit('createCharacterResult', {
+              success : true,
+              body : {
+                character_list : val.character_list
+              }});
+        });
+      }
+    });
+  }
+}
+
+function CreateCharacter(_name = "Nom", _classId = 0)
+{
+  var lCharacter = {};
+  lCharacter.name = _name;
+  lCharacter.level = 1;
+  lCharacter.class_id = _classId;
+  var lClass = mClassesData[_classId];
+  if(lClass == null)
+  {
+    lClass = mClassesData[0];
+  }
+
+  lCharacter.life = mClass.initialLife;
+  lCharacter.damage = mClass.initialDamage;
+  lCharacter.abilities = [];
+
+  lClass.Abilities.forEach(function(_ability) {
+    if(_ability.levelToUnlock <= lCharacter.level)
+    {
+        lCharacter.abilities.add(_ability);
+    }
+  });
+
+  return lCharacter;
 }

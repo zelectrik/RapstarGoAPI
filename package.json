@@ -19,7 +19,8 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "socket.io": "^1.9.0"
+    "fs": "0.0.1-security",
+    "socket.io": "^2.2.0"
   },
   "devDependencies": {
     "mongodb": "^3.1.13",

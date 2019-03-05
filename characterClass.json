@@ -1,0 +1,55 @@
+[
+  {
+    "id" : 0,
+    "name" : "Guerrier",
+    "initialLife" : 150,
+    "lifeAddEachLevel" : 15,
+    "initialDamage" : 10,
+    "damageAddEachLevel" : 1,
+    "Abilities" : [
+      {
+        "id" : 0,
+        "name" : "Coup de poing",
+        "effect" : 0,
+        "effectMultiplier" : 1,
+        "cooldown" : 0.5,
+        "levelToUnlock" : 0
+      },
+      {
+        "id" : 1,
+        "name" : "Coup de tête",
+        "effect" : 0,
+        "effectMultiplier" : 2,
+        "cooldown" : 2,
+        "levelToUnlock" : 0
+      }
+    ]
+  },
+
+  {
+    "id" : 1,
+    "name" : "Healer",
+    "initialLife" : 150,
+    "lifeAddEachLevel" : 15,
+    "initialDamage" : 10,
+    "damageAddEachLevel" : 1,
+    "Abilities" : [
+      {
+        "id" : 0,
+        "name" : "Coup de poing",
+        "effect" : 0,
+        "effectMultiplier" : 1,
+        "cooldown" : 0.5,
+        "levelToUnlock" : 0
+      },
+      {
+        "id" : 1,
+        "name" : "Coup de tête",
+        "effect" : 0,
+        "effectMultiplier" : 2,
+        "cooldown" : 2,
+        "levelToUnlock" : 0
+      }
+    ]
+  }
+]
