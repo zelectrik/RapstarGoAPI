@@ -230,14 +230,14 @@ function disconnectUser(socket_id, message, reset_socket_id)
   {
     dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
       if(err) console.log(err);
-      io.to(socket_id).emit('disconnect', {
+      io.to(socket_id).emit('disconnectUser', {
         success : true,
         body : {
           message : message
         }});
     });
   } else {
-    io.to(socket_id).emit('disconnect', {
+    io.to(socket_id).emit('disconnectUser', {
       success : true,
       body : {
         message : message
