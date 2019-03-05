@@ -260,8 +260,7 @@ function disconnectUser(socket_id, message, reset_socket_id)
 
 function CheckAndCreateCharacter(data, socket)
 {
-  {
-    if(data.name == undefined || data.name == "")
+  if(data.name == undefined || data.name == ""){
     socket.emit('createCharacterResult', {
         success : false,
         body : {
