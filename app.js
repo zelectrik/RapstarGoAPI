@@ -284,9 +284,10 @@ function CheckAndCreateCharacter(data, socket)
               message : "Not connected, can't create character."
             }});
       } else {
-        val.character_list.push(CreateCharacter(data.name, data.classId));
+        var listOfCharacter = val.character_list;
+        listOfCharacter.push(CreateCharacter(data.name, data.classId));
 
-        dbo.collection('user').updateOne(val, {$set : {character_list : val.character_list}},{}, function(err) {
+        dbo.collection('user').updateOne(val, {$set : {character_list : val.character_list}},{upsert : true}, function(err) {
           if(err) console.log(err);
           console.log(val.character_list);
           socket.emit('createCharacterResult', {
