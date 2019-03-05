@@ -292,7 +292,7 @@ function CheckAndCreateCharacter(data, socket)
           socket.emit('createCharacterResult', {
               success : true,
               body : {
-                character_list : val.character_list,
+                
                 message : "Character created."
               }});
         });
