@@ -111,19 +111,30 @@ function createAccount(data, socket)
             message : "Pseudo already existing"
           }});
       } else {
-        dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : []}, function(err) {
-          if(err)
+        dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
+          if (err) console.log(err);
+          /* Permit to disconnect user if use this socket for test */
+          if(val != null && val.pseudo != data.pseudo)
           {
-            console.log(err);
-          } else {
-            socket.emit('createAccountResult', {
-              success : true,
-              body : {
-                message : "Account created",
-                pseudo : data.pseudo,
-                socket_id : socket.id
-              }});
+            dbo.collection('user').updateOne(val, {$set : {socket_id : ""}},{}, function(err) {
+              if(err) console.log(err);
+              console.log("Disconnect from " + val.pseudo);
+            });
           }
+          dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : []}, function(err) {
+            if(err)
+            {
+              console.log(err);
+            } else {
+              socket.emit('createAccountResult', {
+                success : true,
+                body : {
+                  message : "Account created",
+                  pseudo : data.pseudo,
+                  socket_id : socket.id
+                }});
+            }
+          });
         });
       }
     });
