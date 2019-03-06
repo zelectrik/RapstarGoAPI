@@ -343,8 +343,10 @@ function GetAllMyCharacters(data, socket)
           }});
     } else {
       var test = [];
+      var i=0;
       val.character_list.forEach(function(character) {
-        test.push({name : character.name});
+        test.push({id : i, name : character.name, level : character.level, class : character.class_id});
+        i++;
       })
       console.log("Get all my characters");
       console.log(val);
