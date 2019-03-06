@@ -286,7 +286,7 @@ function CheckAndCreateCharacter(data, socket)
       } else {
         var newCharacter = CreateCharacter(data.name, data.classId);
 
-        dbo.collection('user').updateOne(val, {$push : {character_list : newCharacter}},{}, function(err, _val) {
+        dbo.collection('user').updateOne(val, {$push : {character_list : newCharacter}},{}, function(err, _success, _val) {
           if(err) console.log(err);
           console.log(_val.character_list);
           socket.emit('createCharacterResult', {
