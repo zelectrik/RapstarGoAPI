@@ -309,13 +309,14 @@ function CreateCharacter(_name = "Nom", _classId = 0)
   var lCharacter = {};
   lCharacter.name = _name;
   lCharacter.level = 1;
-  lCharacter.class_id = _classId;
+
   var lClass = mClassesData[_classId];
   if(lClass == null)
   {
+    _classId = 0;
     lClass = mClassesData[0];
   }
-
+  lCharacter.class_id = _classId;
   lCharacter.life = lClass.initialLife;
   lCharacter.damage = lClass.initialDamage;
   lCharacter.abilities = [];
