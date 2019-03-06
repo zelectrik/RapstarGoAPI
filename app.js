@@ -346,7 +346,7 @@ function GetAllMyCharacters(data, socket)
       var test = [];
       var i=0;
       val.character_list.forEach(function(character) {
-        test.push({id : i, name : character.name, level : character.level, class : character.class_id});
+        test.push({id : i, name : character.name, level : character.level, class : mClassesData[character.class_id].name);
         i++;
       })
       console.log("Get all my characters");
