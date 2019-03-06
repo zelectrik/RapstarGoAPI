@@ -348,7 +348,7 @@ function GetAllMyCharacters(data, socket)
           success : true,
           body : {
             message : "Get all character."
-          }}, val);
+          }});
     }
   });
 }
