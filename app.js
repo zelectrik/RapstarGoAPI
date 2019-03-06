@@ -343,10 +343,11 @@ function GetAllMyCharacters(data, socket)
           }});
     } else {
       console.log("Get all my characters");
+      console.log(val);
       socket.emit('getAllMyCharactersResult', {
           success : true,
           body : {
-            characters_list : val.character_list,
+            characters_list : val,
             message : "Get all character."
           }});
     }
