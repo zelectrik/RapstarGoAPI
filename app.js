@@ -347,9 +347,8 @@ function GetAllMyCharacters(data, socket)
       socket.emit('getAllMyCharactersResult', {
           success : true,
           body : {
-            characters_list : val,
             message : "Get all character."
-          }});
+          }}, val);
     }
   });
 }
