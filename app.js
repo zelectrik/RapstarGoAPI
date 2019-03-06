@@ -72,6 +72,10 @@ io.on('connection', function(socket) {
     CheckAndCreateCharacter(data, socket); // emit : createCharacterResult
   });
 
+  socket.on('getAllMyCharacters', function(data) {
+    GetAllMyCharacters(data, socket); // emit : getAllMyCharactersResult
+  });
+
   /* End character function */
 
   socket.on('disconnect', function (socket) {
@@ -292,7 +296,6 @@ function CheckAndCreateCharacter(data, socket)
           socket.emit('createCharacterResult', {
               success : true,
               body : {
-                obj : JSON.stringify(val),
                 message : "Character created."
               }});
         });
@@ -325,4 +328,24 @@ function CreateCharacter(_name = "Nom", _classId = 0)
   });
 
   return lCharacter;
+}
+
+function GetAllMyCharacters(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, {projection : {id : 0, character_list : 1}}, function(err, val) {
+    if(err) {
+      socket.emit('getAllMyCharactersResult', {
+          success : false,
+          body : {
+            message : "Character created."
+          }});
+    }
+    console.log(val.character_list);
+    socket.emit('getAllMyCharactersResult', {
+        success : true,
+        body : {
+          characters_list : val.character_list,
+          message : "Character created."
+        }});
+  });
 }
