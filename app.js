@@ -334,10 +334,11 @@ function GetAllMyCharacters(data, socket)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, {projection : {id : 0, character_list : 1}}, function(err, val) {
     if(err) {
+      console.log("Can't get all character.");
       socket.emit('getAllMyCharactersResult', {
           success : false,
           body : {
-            message : "Character created."
+            message : "Can't get all character."
           }});
     } else {
       console.log("Get all my characters");
@@ -345,7 +346,7 @@ function GetAllMyCharacters(data, socket)
           success : true,
           body : {
             characters_list : val.character_list,
-            message : "Character created."
+            message : "Get all character."
           }});
     }
   });
