@@ -347,6 +347,7 @@ function GetAllMyCharacters(data, socket)
       socket.emit('getAllMyCharactersResult', {
           success : true,
           body : {
+            list : JSON.stringify(val),
             message : "Get all character."
           }});
     }
