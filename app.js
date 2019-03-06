@@ -121,7 +121,7 @@ function createAccount(data, socket)
               console.log("Disconnect from " + val.pseudo);
             });
           }
-          dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : []}, function(err) {
+          dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : [], id_current_character : -1, id_current_hub : -1, id_current_room : -1}, function(err) {
             if(err)
             {
               console.log(err);
