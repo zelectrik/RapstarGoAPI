@@ -332,7 +332,7 @@ function CreateCharacter(_name = "Nom", _classId = 0)
 
 function GetAllMyCharacters(data, socket)
 {
-  dbo.collection('user').findOne({socket_id : socket.id}, {projection : {_id : 0, character_list.name : 1}}, function(err, val) {
+  dbo.collection('user').findOne({socket_id : socket.id}, {projection : {_id : 0, character_list : 1}}, function(err, val) {
     if(err) {
       console.log(err);
       console.log("Can't get all character.");
