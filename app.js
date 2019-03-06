@@ -339,13 +339,14 @@ function GetAllMyCharacters(data, socket)
           body : {
             message : "Character created."
           }});
+    } else {
+      console.log("Get all my characters");
+      socket.emit('getAllMyCharactersResult', {
+          success : true,
+          body : {
+            characters_list : val.character_list,
+            message : "Character created."
+          }});
     }
-    console.log("Get all my characters");
-    socket.emit('getAllMyCharactersResult', {
-        success : true,
-        body : {
-          characters_list : val.character_list,
-          message : "Character created."
-        }});
   });
 }
