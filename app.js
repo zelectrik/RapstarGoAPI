@@ -342,11 +342,16 @@ function GetAllMyCharacters(data, socket)
             message : "Can't get all character."
           }});
     } else {
+      var test = [];
+      val.character_list.forEach(function(character) {
+        test.push({name : character.name});
+      })
       console.log("Get all my characters");
       console.log(val);
       socket.emit('getAllMyCharactersResult', {
           success : true,
           body : {
+            obj : test,
             message : "Get all character."
           }});
     }
