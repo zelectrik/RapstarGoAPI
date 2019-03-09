@@ -80,6 +80,10 @@ io.on('connection', function(socket) {
     SelectCharacter(data, socket); // emit : selectCharacterResult
   });
 
+  socket.on('getCurrentCharacter', function(data) {
+    GetCurrentCharacter(data, socket); // emit : getCurrentCharacterResult
+  });
+
   /* End character function */
 
   socket.on('disconnect', function (socket) {
@@ -129,7 +133,7 @@ function createAccount(data, socket)
                 }});
             });
           }
-          dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : [], id_current_character : -1, id_current_hub : -1, id_current_room : -1}, function(err) {
+          dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : [], id_current_character : 0, id_current_hub : -1, id_current_room : -1}, function(err) {
             if(err)
             {
               console.log(err);
@@ -415,9 +419,9 @@ function SelectCharacter(data, socket)
                   }});
             } else {
               socket.emit('selectCharacterResult', {
-                  success : false,
+                  success : true,
                   body : {
-                    message : ""
+                    message : "Success."
                   }});
             }
           });
@@ -425,4 +429,36 @@ function SelectCharacter(data, socket)
       }
     });
   }
+}
+
+function GetCurrentCharacter(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
+    if(error) {
+      socket.emit('getCurrentCharacterResult', {
+          success : false,
+          body : {
+            message : error
+          }});
+    } else {
+      var character = {};
+      var _char = result.character_list[result.id_current_character];
+      if(_char != undefined)
+      {
+        character = {id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+        socket.emit('getCurrentCharacterResult', {
+            success : true,
+            body : {
+              obj : character,
+              message : "Success"
+            }});
+      } else {
+        socket.emit('getCurrentCharacterResult', {
+            success : false,
+            body : {
+              message : "No character selected"
+            }});
+      }
+    }
+  });
 }
