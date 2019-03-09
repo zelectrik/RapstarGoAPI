@@ -118,7 +118,11 @@ function createAccount(data, socket)
           {
             dbo.collection('user').updateOne(val, {$set : {socket_id : ""}},{}, function(err) {
               if(err) console.log(err);
-              console.log("Disconnect from " + val.pseudo);
+              socket.emit('disconnectUser', {
+                success : true,
+                body : {
+                  message : message
+                }});
             });
           }
           dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : [], id_current_character : -1, id_current_hub : -1, id_current_room : -1}, function(err) {
