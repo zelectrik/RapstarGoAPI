@@ -76,6 +76,10 @@ io.on('connection', function(socket) {
     GetAllMyCharacters(data, socket); // emit : getAllMyCharactersResult
   });
 
+  socket.on('selectCharacter', function(data) {
+    SelectCharacter(data, socket); // emit : selectCharacterResult
+  });
+
   /* End character function */
 
   socket.on('disconnect', function (socket) {
@@ -374,4 +378,51 @@ function GetAllMyCharacters(data, socket)
           }});
     }
   });
+}
+
+function SelectCharacter(data, socket)
+{
+  if(data.idSelected == undefined || !Number.isInteger(data.idSelected))
+  {
+    socket.emit('selectCharacterResult', {
+        success : false,
+        body : {
+          message : "Invalid identifier."
+        }});
+  } else {
+    dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
+      if(error) {
+        socket.emit('selectCharacterResult', {
+            success : false,
+            body : {
+              message : error
+            }});
+      } else {
+        if(result.character_list == undefined || data.idSelected > (result.character_list.length - 1))
+        {
+          socket.emit('selectCharacterResult', {
+              success : false,
+              body : {
+                message : "Character not existing."
+              }});
+        } else {
+          dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_character: data.idSelected } }, function(err, res) {
+            if(err) {
+              socket.emit('selectCharacterResult', {
+                  success : false,
+                  body : {
+                    message : err
+                  }});
+            } else {
+              socket.emit('selectCharacterResult', {
+                  success : false,
+                  body : {
+                    message : ""
+                  }});
+            }
+          });
+        }
+      }
+    });
+  }
 }
