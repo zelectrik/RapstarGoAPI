@@ -121,7 +121,7 @@ function createAccount(data, socket)
               socket.emit('disconnectUser', {
                 success : true,
                 body : {
-                  message : message
+                  message : "Disconnect from previous account."
                 }});
             });
           }
