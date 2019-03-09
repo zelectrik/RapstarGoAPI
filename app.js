@@ -368,7 +368,7 @@ function GetAllMyCharacters(data, socket)
     } else {
       var test = [];
       var i=0;
-      if(val.character_list == undefined) {
+      if(val == undefined || val.character_list == undefined) {
         socket.emit('getAllMyCharactersResult', {
             success : false,
             body : {
@@ -451,7 +451,7 @@ function GetCurrentCharacter(data, socket)
           }});
     } else {
       var character = {};
-      if(result.character_list == undefined)
+      if(result == undefined || result.character_list == undefined)
       {
         socket.emit('getCurrentCharacterResult', {
             success : false,
