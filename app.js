@@ -443,22 +443,31 @@ function GetCurrentCharacter(data, socket)
           }});
     } else {
       var character = {};
-      var _char = result.character_list[result.id_current_character];
-      if(_char != undefined)
+      if(result.character_list == undefined)
       {
-        character = {id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
-        socket.emit('getCurrentCharacterResult', {
-            success : true,
-            body : {
-              obj : character,
-              message : "Success"
-            }});
-      } else {
         socket.emit('getCurrentCharacterResult', {
             success : false,
             body : {
-              message : "No character selected"
+              message : "Not connected"
             }});
+      } else {
+        var _char = result.character_list[result.id_current_character];
+        if(_char != undefined)
+        {
+          character = {id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+          socket.emit('getCurrentCharacterResult', {
+              success : true,
+              body : {
+                obj : character,
+                message : "Success"
+              }});
+        } else {
+          socket.emit('getCurrentCharacterResult', {
+              success : false,
+              body : {
+                message : "No character selected"
+              }});
+        }
       }
     }
   });
