@@ -433,6 +433,7 @@ function SelectCharacter(data, socket)
 
 function GetCurrentCharacter(data, socket)
 {
+  console.log("GetCurrentCharacter");
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
     if(error) {
       socket.emit('getCurrentCharacterResult', {
