@@ -368,18 +368,26 @@ function GetAllMyCharacters(data, socket)
     } else {
       var test = [];
       var i=0;
-      val.character_list.forEach(function(character) {
-        test.push({id : i, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
-        i++;
-      })
-      console.log("Get all my characters");
-      console.log(val);
-      socket.emit('getAllMyCharactersResult', {
-          success : true,
-          body : {
-            obj : test,
-            message : "Get all character."
-          }});
+      if(val.character_list == undefined) {
+        socket.emit('getAllMyCharactersResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        val.character_list.forEach(function(character) {
+          test.push({id : i, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
+          i++;
+        })
+        console.log("Get all my characters");
+        console.log(val);
+        socket.emit('getAllMyCharactersResult', {
+            success : true,
+            body : {
+              obj : test,
+              message : "Get all character."
+            }});
+      }
     }
   });
 }
