@@ -478,7 +478,7 @@ function GetCurrentCharacter(data, socket)
         var _char = result.character_list[result.id_current_character];
         if(_char != undefined)
         {
-          character = {user_id : result.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+          character = {user_id : _char.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
           socket.emit('getCurrentCharacterResult', {
               success : true,
               body : {
