@@ -86,6 +86,14 @@ io.on('connection', function(socket) {
 
   /* End character function */
 
+  /* Start Hub function */
+
+  socket.on('getAllHubs', function(data) {
+    GetAllHubs(data, socket); // emit : getAllHubsResult
+  });
+
+  /* End Hub function */
+
   socket.on('disconnect', function (socket) {
     console.log("A client has disconnected!");
   });
@@ -441,7 +449,6 @@ function SelectCharacter(data, socket)
 
 function GetCurrentCharacter(data, socket)
 {
-  console.log("GetCurrentCharacter");
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
     if(error) {
       socket.emit('getCurrentCharacterResult', {
@@ -479,4 +486,26 @@ function GetCurrentCharacter(data, socket)
       }
     }
   });
+}
+
+function GetAllHubs(data, socket)
+{
+  dbo.collection('hub').find({}, function(err, res) {
+    if(err)
+    {
+      socket.emit('getAllHubsResult', {
+          success : false,
+          body : {
+            message : err
+          }});
+    } else {
+      console.log(res);
+      socket.emit('getAllHubsResult', {
+          success : true,
+          body : {
+            obj : res,
+            message : "Success"
+          }});
+    }
+  })
 }
