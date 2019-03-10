@@ -752,6 +752,12 @@ function CreateRoom(data, socket)
             body : {
               message : "Not connected"
             }});
+      } else if(user.id_current_room != "") {
+        socket.emit('joinRoomResult', {
+            success : false,
+            body : {
+              message : "Already connected to a room."
+            }});
       } else {
         if(result.id_current_hub == undefined || result.id_current_hub < 0)
         {
@@ -816,6 +822,12 @@ function JoinRoom(data, socket)
             success : false,
             body : {
               message : "Not connected"
+            }});
+      } else if(user.id_current_room != "") {
+        socket.emit('joinRoomResult', {
+            success : false,
+            body : {
+              message : "Already connected to a room."
             }});
       } else {
         if(data.roomId == undefined || data.roomId.length == 0)
@@ -921,9 +933,6 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
           break;
         }
       }
-      console.log("===============Room=================");
-      console.log(wantedRoom);
-      console.log("===============Fin=================");
       dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
         if(errUsers)
         {
@@ -938,19 +947,11 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
           {
             for(let _userObj of UsersList)
             {
-              console.log("===============Check=================");
-              console.log(_userid + " == " + _userObj._id.toString());
-              console.log((_userid == _userObj._id.toString()));
-              console.log("===============Fin=================");
               if(_userid == _userObj._id.toString())
               {
                 var characterId = 0;
                 for(let _character of _userObj.character_list)
                 {
-                  console.log("===============Check2=================");
-                  console.log(characterId + " == " + _userObj.id_current_character);
-                  console.log((characterId == _userObj.id_current_character));
-                  console.log("===============Fin=================");
                   if(characterId == _userObj.id_current_character)
                   {
                     CharacterList.push({id : _userObj.id_current_character, name : _character.name, level : _character.level, class_name : mClassesData[_character.class_id].name, user_id : _userid});
