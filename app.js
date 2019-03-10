@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 var HubChannelPrefix = "Hub_";
+var RoomChannelPrefix = "Room_";
 
 var MongoClient = require('mongodb').MongoClient;
 var uri = "mongodb://127.0.0.1:27017/";
@@ -112,6 +113,10 @@ io.on('connection', function(socket) {
 
   socket.on('createRoom', function(data) {
     CreateRoom(data, socket); // emit : createRoomResult
+  });
+
+  socket.on('joinRoom', function(data) {
+    JoinRoom(data, socket); // emit : joinRoomResult
   });
 
   /* End Room function */
@@ -759,7 +764,7 @@ function CreateRoom(data, socket)
           var room = {};
           room.id = result._id.toString() + Date.now().toString();
           room.user_id_owner = result._id.toString();
-          room.user_list = [room.user_id_owner];
+          room.user_list = [];
 
           dbo.collection('hub').updateOne({id : result.id_current_hub}, {$push : {rooms_list : room}},{}, function(err, _success) {
             if(err)
@@ -775,6 +780,7 @@ function CreateRoom(data, socket)
                   body : {
                     message : "Success"
                   }});
+              JoinRoom({roomId : room.id}, socket);
               BroadcastRoomCreation(HubChannelPrefix + result.id_current_hub.toString(),room);
             }
           });
@@ -792,4 +798,150 @@ function BroadcastRoomCreation(channelName, room)
         message : "Success add"
       }});
 
+}
+
+function JoinRoom(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
+    if(error) {
+      socket.emit('joinRoomResult', {
+          success : false,
+          body : {
+            message : error
+          }});
+    } else {
+      if(user == undefined)
+      {
+        socket.emit('joinRoomResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        if(data.roomId == undefined || data.roomId.length == 0)
+        {
+          socket.emit('joinRoomResult', {
+              success : false,
+              body : {
+                message : "No room selected"
+              }});
+        } else {
+          dbo.collection('hub').findOne({id : user.id_current_hub, rooms_list : {$elemMatch: {id : data.roomId}}}, function(err, hub) {
+            if(err)
+            {
+              socket.emit('joinRoomResult', {
+                  success : false,
+                  body : {
+                    message : err
+                  }});
+            } else {
+              if(hub == undefined)
+              {
+                socket.emit('joinRoomResult', {
+                    success : false,
+                    body : {
+                      message : "No room for this hub"
+                    }});
+              } else {
+                var wantedRoom = {};
+                for (let _room of hub.rooms_list)
+                {
+                  if(_room.id == data.roomId)
+                  {
+                    wantedRoom = _room;
+                    break;
+                  }
+                }
+                dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : data.roomId},{$push: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdate) {
+                  if(errUpdate)
+                  {
+                    socket.emit('joinRoomResult', {
+                        success : false,
+                        body : {
+                          message : errUpdate
+                        }});
+                  } else {
+                    dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : data.roomId}}, function(errUpdateUser) {
+                      if(errUpdateUser)
+                      {
+                        socket.emit('joinRoomResult', {
+                            success : false,
+                            body : {
+                              message : errUpdateUser
+                            }});
+                      } else {
+                        socket.join(RoomChannelPrefix + data.roomId);
+                        socket.emit('joinRoomResult', {
+                            success : true,
+                            body : {
+                              obj : {id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
+                              message : "Success"
+                            }});
+                        BroadcastUserEnterRoom(user.id_current_hub, data.roomId);
+                      }
+                    });
+                  }
+                });
+
+              }
+            }
+          });
+        }
+      }
+    }
+  });
+}
+
+//Envoie la liste des joueurs dans le hub
+// emit : getAllUserOfRoom
+function BroadcastUserEnterRoom(_hubId,_roomId)
+{
+  var channelName = RoomChannelPrefix + _roomId.toString();
+  dbo.collection('hub').findOne({id : _hubId }, function(errHub, hub) {
+    if(errHub)
+    {
+      io.to(channelName).emit('getAllUserOfRoom', {
+          success : false,
+          body : {
+            message : errHub
+          }});
+    } else {
+      dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
+        if(errUsers)
+        {
+          io.to(channelName).emit('getAllUserOfRoom', {
+              success : false,
+              body : {
+                message : errUsers
+              }});
+        } else {
+          var CharacterList = [];
+          forEach(_userid in hub.user_list)
+          {
+            for(let _userObj of UsersList)
+            {
+              if(_userid == _userObj.id)
+              {
+                for(let _character of _userObj.character_list)
+                {
+                  if(_character.id == _userObj.id_current_character)
+                  {
+                    CharacterList.push({id : _userObj.id, name : _userObj.name, level : _userObj.level, class_name : mClassesData[_userObj.class_id].name, user_id : _userid});
+                    break;
+                  }
+                }
+                break;
+              }
+            }
+          }
+          io.to(channelName).emit('getAllUserOfRoom', {
+              success : true,
+              body : {
+                obj : CharacterList,
+                message : "Success"
+              }});
+        }
+      });
+    }
+  });
 }
