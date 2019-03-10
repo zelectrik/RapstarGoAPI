@@ -500,12 +500,26 @@ function GetAllHubs(data, socket)
           }});
     } else {
       console.log(res);
-      socket.emit('getAllHubsResult', {
-          success : true,
-          body : {
-            obj : res,
-            message : "Success"
-          }});
+      if(res == undefined || res.length == 0)
+      {
+        socket.emit('getAllHubsResult', {
+            success : false,
+            body : {
+              message : "Can't get hubs"
+            }});
+      } else {
+        var hub_list = [];
+        res.forEach(function(_hub) {
+          hub_list.push({id : _hub.id, name : _hub.name, location : _hub.location});
+        })
+
+        socket.emit('getAllHubsResult', {
+            success : true,
+            body : {
+              obj : hub_list,
+              message : "Success"
+            }});
+      }
     }
   })
 }
