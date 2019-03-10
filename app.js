@@ -609,6 +609,10 @@ function ConnectToHub(data, socket)
                           message : error
                         }});
                   } else {
+                    if(result.id_current_hub != undefined && result.id_current_hub >= 0)
+                    {
+                      socket.leave(HubChannelPrefix + result.id_current_hub);
+                    }
                     socket.join(HubChannelPrefix + res.id.toString());
                     socket.emit('connectToHubResult', {
                         success : true,
