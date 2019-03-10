@@ -92,6 +92,15 @@ io.on('connection', function(socket) {
     GetAllHubs(data, socket); // emit : getAllHubsResult
   });
 
+  socket.on('connectToHub', function(data) {
+    ConnectToHub(data, socket); // emit : connectToHubResult
+  });
+
+  socket.on('getHubConnectedTo', function(data) {
+    GetHubConnectedTo(data, socket); // emit : getHubConnectedToResult
+  });
+
+
   /* End Hub function */
 
   socket.on('disconnect', function (socket) {
@@ -519,6 +528,130 @@ function GetAllHubs(data, socket)
               obj : hub_list,
               message : "Success"
             }});
+      }
+    }
+  });
+}
+
+function ConnectToHub(data, socket)
+{
+  if(data.hubId == undefined || !Number.isInteger(data.hubId))
+  {
+    socket.emit('connectToHubResult', {
+        success : false,
+        body : {
+          message : "Hub id Incorrect"
+        }});
+  } else {
+    dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
+      if(error) {
+        socket.emit('connectToHubResult', {
+            success : false,
+            body : {
+              message : error
+            }});
+      } else {
+        var character = {};
+        if(result == undefined || result.character_list == undefined)
+        {
+          socket.emit('connectToHubResult', {
+              success : false,
+              body : {
+                message : "Not connected"
+              }});
+        } else {
+          dbo.collection('hub').findOne({id : data.hubId}, function(err, res) {
+            if(error) {
+              socket.emit('connectToHubResult', {
+                  success : false,
+                  body : {
+                    message : error
+                  }});
+            } else {
+              if(res == undefined)
+              {
+                socket.emit('connectToHubResult', {
+                    success : false,
+                    body : {
+                      message : "No hub for this id"
+                    }});
+              } else {
+                dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: data.hubId } }, function(errUpdate, res) {
+                  if(errUpdate) {
+                    socket.emit('connectToHubResult', {
+                        success : false,
+                        body : {
+                          message : error
+                        }});
+                  } else {
+                    socket.emit('connectToHubResult', {
+                        success : true,
+                        body : {
+                          message : "Succes"
+                        }});
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+}
+
+function GetHubConnectedTo(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
+    if(error) {
+      socket.emit('getHubConnectedToResult', {
+          success : false,
+          body : {
+            message : error
+          }});
+    } else {
+      if(result == undefined)
+      {
+        socket.emit('getHubConnectedToResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        if(result.id_current_hub == undefined || result.id_current_hub == -1)
+        {
+          socket.emit('getHubConnectedToResult', {
+              success : false,
+              body : {
+                message : "No Hub connected To"
+              }});
+        } else {
+          dbo.collection('hub').findOne({id : result.id_current_hub}, function(err, res) {
+            if(err) {
+              socket.emit('getHubConnectedToResult', {
+                  success : false,
+                  body : {
+                    message : err
+                  }});
+            } else {
+              if(res == undefined)
+              {
+                socket.emit('getHubConnectedToResult', {
+                    success : false,
+                    body : {
+                      message : "No Hub connected To"
+                    }});
+              } else {
+                socket.emit('getHubConnectedToResult', {
+                    success : true,
+                    body : {
+                      obj : {id : res.id, name : res.name, location : res.location, rooms_list : res.rooms_list}
+                      message : "Success"
+                    }});
+              }
+            }
+          });
+        }
       }
     }
   });
