@@ -443,10 +443,10 @@ function SelectCharacter(data, socket)
                     message : err
                   }});
             } else {
-              var _char = result.character_list[result.id_current_character];
+              var _char = result.character_list[data.idSelected];
               if(_char != undefined)
               {
-                character = {user_id : _char.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+                character = {user_id : _char.user_id ,id : data.idSelected, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
                 socket.emit('selectCharacterResult', {
                     success : true,
                     body : {
