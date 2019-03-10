@@ -100,6 +100,10 @@ io.on('connection', function(socket) {
     GetHubConnectedTo(data, socket); // emit : getHubConnectedToResult
   });
 
+  socket.on('exitHub', function(data) {
+    ExitHub(data, socket); // emit : exitHubResult
+  });
+
 
   /* End Hub function */
 
@@ -666,6 +670,26 @@ function GetHubConnectedTo(data, socket)
           });
         }
       }
+    }
+  });
+}
+
+function ExitHub(data, socket)
+{
+  dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
+    if(errUpdate)
+    {
+      socket.emit('exitHubResult', {
+          success : false,
+          body : {
+            message : errUpdate
+          }});
+    } else {
+      socket.emit('exitHubResult', {
+          success : true,
+          body : {
+            message : "Success"
+          }});
     }
   });
 }
