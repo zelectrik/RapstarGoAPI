@@ -916,7 +916,7 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
               }});
         } else {
           var CharacterList = [];
-          forEach(_userid in hub.user_list)
+          hub.user_list.forEach(function(_userid)
           {
             for(let _userObj of UsersList)
             {
@@ -933,7 +933,7 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
                 break;
               }
             }
-          }
+          });
           io.to(channelName).emit('getAllUserOfRoom', {
               success : true,
               body : {
