@@ -443,11 +443,23 @@ function SelectCharacter(data, socket)
                     message : err
                   }});
             } else {
-              socket.emit('selectCharacterResult', {
-                  success : true,
-                  body : {
-                    message : "Success."
-                  }});
+              var _char = result.character_list[result.id_current_character];
+              if(_char != undefined)
+              {
+                character = {user_id : _char.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+                socket.emit('selectCharacterResult', {
+                    success : true,
+                    body : {
+                      obj : character,
+                      message : "Success."
+                    }});
+              } else {
+                socket.emit('selectCharacterResult', {
+                    success : false,
+                    body : {
+                      message : "Character not existing."
+                    }});
+              }
             }
           });
         }
