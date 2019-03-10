@@ -923,7 +923,6 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
       }
       console.log("===============Room=================");
       console.log(wantedRoom);
-      console.log(wantedRoom.user_list);
       console.log("===============Fin=================");
       dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
         if(errUsers)
@@ -953,6 +952,9 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
               }
             }
           });
+          console.log("===============CharacterList=================");
+          console.log(CharacterList);
+          console.log("===============Fin=================");
           io.to(channelName).emit('getAllUserOfRoom', {
               success : true,
               body : {
