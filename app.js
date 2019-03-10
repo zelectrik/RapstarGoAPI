@@ -898,9 +898,6 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
 {
   var channelName = RoomChannelPrefix + _roomId.toString();
   dbo.collection('hub').findOne({id : _hubId }, { rooms_list: { $elemMatch: { id: _roomId } } }, function(errHub, hub) {
-    console.log("===============HUB=================");
-    console.log(hub);
-    console.log("===============Fin=================");
     if(errHub)
     {
       io.to(channelName).emit('getAllUserOfRoom', {
@@ -924,7 +921,10 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
           break;
         }
       }
-
+      console.log("===============Room=================");
+      console.log(wantedRoom);
+      console.log(wantedRoom.user_list);
+      console.log("===============Fin=================");
       dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
         if(errUsers)
         {
