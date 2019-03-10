@@ -898,12 +898,21 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
 {
   var channelName = RoomChannelPrefix + _roomId.toString();
   dbo.collection('hub').findOne({id : _hubId }, function(errHub, hub) {
+    console.log("===============HUB=================");
+    console.log(hub);
+    console.log("===============Fin=================");
     if(errHub)
     {
       io.to(channelName).emit('getAllUserOfRoom', {
           success : false,
           body : {
             message : errHub
+          }});
+    } else if(hub == undefined || hub.user_list == undefined) {
+      io.to(channelName).emit('getAllUserOfRoom', {
+          success : false,
+          body : {
+            message : "No hub "
           }});
     } else {
       dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
