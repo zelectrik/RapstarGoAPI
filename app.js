@@ -908,13 +908,23 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
           body : {
             message : errHub
           }});
-    } else if(hub == undefined || hub.user_list == undefined) {
+    } else if(hub == undefined) {
       io.to(channelName).emit('getAllUserOfRoom', {
           success : false,
           body : {
             message : "No hub "
           }});
     } else {
+      var wantedRoom = {};
+      for(let _room of hub.rooms_list)
+      {
+        if(_room.id == _roomId)
+        {
+          wantedRoom = _room;
+          break;
+        }
+      }
+
       dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
         if(errUsers)
         {
@@ -925,7 +935,7 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
               }});
         } else {
           var CharacterList = [];
-          hub.user_list.forEach(function(_userid)
+          wantedRoom.user_list.forEach(function(_userid)
           {
             for(let _userObj of UsersList)
             {
