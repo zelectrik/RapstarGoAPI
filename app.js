@@ -897,7 +897,7 @@ function JoinRoom(data, socket)
 function BroadcastUserEnterRoom(_hubId,_roomId)
 {
   var channelName = RoomChannelPrefix + _roomId.toString();
-  dbo.collection('hub').findOne({id : _hubId }, function(errHub, hub) {
+  dbo.collection('hub').findOne({id : _hubId }, { rooms_list: { $elemMatch: { id: _roomId } } }, function(errHub, hub) {
     console.log("===============HUB=================");
     console.log(hub);
     console.log("===============Fin=================");
