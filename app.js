@@ -752,7 +752,7 @@ function CreateRoom(data, socket)
             body : {
               message : "Not connected"
             }});
-      } else if(user.id_current_room != "") {
+      } else if(result.id_current_room != "") {
         socket.emit('joinRoomResult', {
             success : false,
             body : {
