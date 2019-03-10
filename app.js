@@ -15,6 +15,8 @@ var fs = require('fs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+var HubChannelPrefix = "Hub_";
+
 var MongoClient = require('mongodb').MongoClient;
 var uri = "mongodb://127.0.0.1:27017/";
 var dbo;
@@ -104,8 +106,15 @@ io.on('connection', function(socket) {
     ExitHub(data, socket); // emit : exitHubResult
   });
 
-
   /* End Hub function */
+
+  /* Start Room function */
+
+  socket.on('createRoom', function(data) {
+    CreateRoom(data, socket); // emit : createRoomResult
+  });
+
+  /* End Room function */
 
   socket.on('disconnect', function (socket) {
     console.log("A client has disconnected!");
@@ -600,6 +609,7 @@ function ConnectToHub(data, socket)
                           message : error
                         }});
                   } else {
+                    socket.join(HubChannelPrefix + res.id.toString());
                     socket.emit('connectToHubResult', {
                         success : true,
                         body : {
@@ -676,20 +686,106 @@ function GetHubConnectedTo(data, socket)
 
 function ExitHub(data, socket)
 {
-  dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
-    if(errUpdate)
-    {
-      socket.emit('exitHubResult', {
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
+    if(error) {
+      socket.emit('connectToHubResult', {
           success : false,
           body : {
-            message : errUpdate
+            message : error
           }});
     } else {
-      socket.emit('exitHubResult', {
-          success : true,
-          body : {
-            message : "Success"
-          }});
+      var character = {};
+      if(result == undefined || result.character_list == undefined)
+      {
+        socket.emit('connectToHubResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
+          if(errUpdate)
+          {
+            socket.emit('exitHubResult', {
+                success : false,
+                body : {
+                  message : errUpdate
+                }});
+          } else {
+            socket.leave(HubChannelPrefix + result.id_current_hub.toString());
+            socket.emit('exitHubResult', {
+                success : true,
+                body : {
+                  message : "Success"
+                }});
+          }
+        });
+      }
     }
   });
+
+}
+
+function CreateRoom(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
+    if(error) {
+      socket.emit('createRoomResult', {
+          success : false,
+          body : {
+            message : error
+          }});
+    } else {
+      if(result == undefined)
+      {
+        socket.emit('createRoomResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        if(result.id_current_hub == undefined || result.id_current_hub < 0)
+        {
+          socket.emit('createRoomResult', {
+              success : false,
+              body : {
+                message : "No hub connected to"
+              }});
+        } else {
+          var room = {};
+          room.id = result._id.toString() + Date.now().toString();
+          room.user_id_owner = result._id.toString();
+          room.user_list = [room.user_id_owner];
+
+          dbo.collection('hub').updateOne({id : result.id_current_hub}, {$push : {rooms_list : room}},{}, function(err, _success) {
+            if(err)
+            {
+              socket.emit('createRoomResult', {
+                  success : false,
+                  body : {
+                    message : err
+                  }});
+            } else {
+              socket.emit('createRoomResult', {
+                  success : true,
+                  body : {
+                    message : "Success"
+                  }});
+              BroadcastRoomCreation(HubChannelPrefix + result.id_current_hub.toString(),room);
+            }
+          });
+        }
+      }
+    }
+  });
+}
+
+function BroadcastRoomCreation(channelName, room)
+{
+  io.to(channelName).emit('roomAddToHub', {
+      body : {
+        obj : room,
+        message : "Success add"
+      }});
+
 }
