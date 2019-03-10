@@ -490,7 +490,7 @@ function GetCurrentCharacter(data, socket)
 
 function GetAllHubs(data, socket)
 {
-  dbo.collection('hub').find({}, function(err, res) {
+  dbo.collection('hub').find({}).toArray(function(err, res) {
     if(err)
     {
       socket.emit('getAllHubsResult', {
@@ -521,5 +521,5 @@ function GetAllHubs(data, socket)
             }});
       }
     }
-  })
+  });
 }
