@@ -329,7 +329,7 @@ function CheckAndCreateCharacter(data, socket)
             }});
       } else {
         var newCharacter = CreateCharacter(data.name, data.classId);
-
+        newCharacter.user_id = val._id.toString();
         dbo.collection('user').updateOne(val, {$push : {character_list : newCharacter}},{}, function(err, _success) {
           if(err) console.log(err);
           console.log(val.character_list);
@@ -393,7 +393,7 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          test.push({id : i, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
+          test.push({user_id : character.user_id, id : i, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
           i++;
         })
         console.log("Get all my characters");
@@ -478,7 +478,7 @@ function GetCurrentCharacter(data, socket)
         var _char = result.character_list[result.id_current_character];
         if(_char != undefined)
         {
-          character = {id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+          character = {user_id : result.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
           socket.emit('getCurrentCharacterResult', {
               success : true,
               body : {
