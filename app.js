@@ -588,7 +588,7 @@ function ConnectToHub(data, socket)
                       message : "No hub for this id"
                     }});
               } else {
-                dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: data.hubId } }, function(errUpdate, res) {
+                dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: data.hubId } }, function(errUpdate) {
                   if(errUpdate) {
                     socket.emit('connectToHubResult', {
                         success : false,
@@ -599,6 +599,7 @@ function ConnectToHub(data, socket)
                     socket.emit('connectToHubResult', {
                         success : true,
                         body : {
+                          obj : {id : res.id, name : res.name, location : res.location, rooms_list : res.rooms_list},
                           message : "Succes"
                         }});
                   }
