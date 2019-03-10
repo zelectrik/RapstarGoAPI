@@ -645,7 +645,7 @@ function GetHubConnectedTo(data, socket)
                 socket.emit('getHubConnectedToResult', {
                     success : true,
                     body : {
-                      obj : {id : res.id, name : res.name, location : res.location, rooms_list : res.rooms_list}
+                      obj : {id : res.id, name : res.name, location : res.location, rooms_list : res.rooms_list},
                       message : "Success"
                     }});
               }
