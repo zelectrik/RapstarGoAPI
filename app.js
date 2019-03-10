@@ -938,6 +938,10 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
           {
             for(let _userObj of UsersList)
             {
+              console.log("===============Check=================");
+              console.log(_userid + " == " + _userObj._id.toString());
+              console.log((_userid == _userObj._id.toString()));
+              console.log("===============Fin=================");
               if(_userid == _userObj._id.toString())
               {
                 for(let _character of _userObj.character_list)
