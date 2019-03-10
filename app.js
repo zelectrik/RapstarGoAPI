@@ -938,7 +938,7 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
           {
             for(let _userObj of UsersList)
             {
-              if(_userid == _userObj.id)
+              if(_userid == _userObj._id.toString())
               {
                 for(let _character of _userObj.character_list)
                 {
