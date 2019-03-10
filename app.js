@@ -953,7 +953,7 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
                   console.log("===============Fin=================");
                   if(characterId == _userObj.id_current_character)
                   {
-                    CharacterList.push({id : userObj.id_current_character, name : _character.name, level : _character.level, class_name : mClassesData[_character.class_id].name, user_id : _userid});
+                    CharacterList.push({id : _userObj.id_current_character, name : _character.name, level : _character.level, class_name : mClassesData[_character.class_id].name, user_id : _userid});
                     break;
                   }
                   characterId++;
