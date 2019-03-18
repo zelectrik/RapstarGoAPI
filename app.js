@@ -104,7 +104,9 @@ io.on('connection', function(socket) {
   });
 
   socket.on('exitHub', function(data) {
-    ExitHub(data, socket); // emit : exitHubResult
+    ExitHub(data, socket, function(err) {
+
+    }); // emit : exitHubResult
   });
 
   /* End Hub function */
@@ -120,7 +122,9 @@ io.on('connection', function(socket) {
   });
 
   socket.on('exitRoom', function(data) {
-    ExitRoom(data, socket); // emit : exitRoomResult
+    ExitRoom(data, socket, function(err) {
+      
+    }); // emit : exitRoomResult
   });
 
   /* End Room function */
@@ -306,7 +310,7 @@ function loggedAccount(data, socket)
 
 function disconnectUser(socket_id, message, reset_socket_id)
 {
-  ExitHub({}, socket, function() {
+  ExitHub({}, socket, function(err) {
     if(reset_socket_id)
     {
       dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
@@ -719,7 +723,7 @@ function ExitHub(data, socket, callback)
               message : "Not connected"
             }});
       } else {
-        ExitRoom({},socket, function() {
+        ExitRoom({},socket, function(err) {
           dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
             if(errUpdate)
             {
@@ -735,7 +739,7 @@ function ExitHub(data, socket, callback)
                   body : {
                     message : "Success"
                   }});
-              callback();
+              callback(null);
             }
           });
         });
@@ -1076,7 +1080,7 @@ function ExitRoom(data, socket, callback)
                       }});
                   socket.leave(RoomChannelPrefix + user.id_current_room);
                   BroadcastRoomCharacterChanged(user.id_current_hub, user.id_current_room);
-                  callback();
+                  callback(null);
                 }
               });
             }
