@@ -119,6 +119,10 @@ io.on('connection', function(socket) {
     JoinRoom(data, socket); // emit : joinRoomResult
   });
 
+  socket.on('exitRoom', function(data) {
+    ExitRoom(data, socket); // emit : exitRoomResult
+  });
+
   /* End Room function */
 
   socket.on('disconnect', function (socket) {
@@ -899,7 +903,7 @@ function JoinRoom(data, socket)
                               obj : {id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
                               message : "Success"
                             }});
-                        BroadcastUserEnterRoom(user.id_current_hub, data.roomId);
+                        BroadcastRoomCharacterChanged(user.id_current_hub, data.roomId);
                       }
                     });
                   }
@@ -916,7 +920,7 @@ function JoinRoom(data, socket)
 
 //Envoie la liste des joueurs dans le hub
 // emit : getAllUserOfRoom
-function BroadcastUserEnterRoom(_hubId,_roomId)
+function BroadcastRoomCharacterChanged(_hubId,_roomId)
 {
   var channelName = RoomChannelPrefix + _roomId.toString();
   dbo.collection('hub').findOne({id : _hubId }, { rooms_list: { $elemMatch: { id: _roomId } } }, function(errHub, hub) {
@@ -984,6 +988,70 @@ function BroadcastUserEnterRoom(_hubId,_roomId)
               }});
         }
       });
+    }
+  });
+}
+
+
+function ExitRoom(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
+    if(error) {
+      socket.emit('exitRoomResult', {
+          success : false,
+          body : {
+            message : error
+          }});
+    } else {
+      if(user == undefined)
+      {
+        socket.emit('exitRoomResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        if(user.id_current_room == "-1")
+        {
+          socket.emit('exitRoomResult', {
+              success : false,
+              body : {
+                message : "Not connected to room"
+              }});
+        } else {
+          dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : "-1"}}, function(errUpdateUser) {
+            if(errUpdateUser)
+            {
+              socket.emit('exitRoomResult', {
+                  success : false,
+                  body : {
+                    message : errUpdateUser
+                  }});
+            } else {
+              dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : data.roomId},{$pull: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdateHub) {
+                if(errUpdateHub)
+                {
+                  socket.emit('exitRoomResult', {
+                      success : false,
+                      body : {
+                        message : errUpdateHub
+                      }});
+                } else {
+                  socket.emit('exitRoomResult', {
+                      success : true,
+                      body : {
+                        message : "Success"
+                      }});
+                  socket.leave(RoomChannelPrefix + user.id_current_room);
+                  BroadcastRoomCharacterChanged(user.id_current_hub, user.id_current_room);
+                }
+              });
+            }
+          });
+
+
+        }
+      }
     }
   });
 }
