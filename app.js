@@ -810,6 +810,15 @@ function BroadcastRoomCreation(channelName, room)
 
 }
 
+function BroadcastRoomDestruction(channelName, room_id)
+{
+  io.to(channelName).emit('roomRemoveToHub', {
+      body : {
+        room_id : room_id,
+        message : "Success remove"
+      }});
+}
+
 function JoinRoom(data, socket)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
@@ -947,51 +956,67 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
           break;
         }
       }
-      dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
-        if(errUsers)
-        {
-          io.to(channelName).emit('getAllUserOfRoom', {
-              success : false,
-              body : {
-                message : errUsers
-              }});
-        } else {
-          var CharacterList = [];
-          wantedRoom.user_list.forEach(function(_userid)
+      if(wantedRoom.user_list.length == 0)
+      {
+        RemoveRoom(_hubId,_roomId);
+      } else {
+        dbo.collection('user').find({id_current_room : _roomId}).toArray(function(errUsers, UsersList) {
+          if(errUsers)
           {
-            for(let _userObj of UsersList)
+            io.to(channelName).emit('getAllUserOfRoom', {
+                success : false,
+                body : {
+                  message : errUsers
+                }});
+          } else {
+            var CharacterList = [];
+            wantedRoom.user_list.forEach(function(_userid)
             {
-              if(_userid == _userObj._id.toString())
+              for(let _userObj of UsersList)
               {
-                var characterId = 0;
-                for(let _character of _userObj.character_list)
+                if(_userid == _userObj._id.toString())
                 {
-                  if(characterId == _userObj.id_current_character)
+                  var characterId = 0;
+                  for(let _character of _userObj.character_list)
                   {
-                    CharacterList.push({id : _userObj.id_current_character, name : _character.name, level : _character.level, class_name : mClassesData[_character.class_id].name, user_id : _userid});
-                    break;
+                    if(characterId == _userObj.id_current_character)
+                    {
+                      CharacterList.push({id : _userObj.id_current_character, name : _character.name, level : _character.level, class_name : mClassesData[_character.class_id].name, user_id : _userid});
+                      break;
+                    }
+                    characterId++;
                   }
-                  characterId++;
+                  break;
                 }
-                break;
               }
-            }
-          });
-          console.log("===============CharacterList=================");
-          console.log(CharacterList);
-          console.log("===============Fin=================");
-          io.to(channelName).emit('getAllUserOfRoom', {
-              success : true,
-              body : {
-                obj : CharacterList,
-                message : "Success"
-              }});
-        }
-      });
+            });
+            console.log("===============CharacterList=================");
+            console.log(CharacterList);
+            console.log("===============Fin=================");
+            io.to(channelName).emit('getAllUserOfRoom', {
+                success : true,
+                body : {
+                  obj : CharacterList,
+                  message : "Success"
+                }});
+          }
+        });
+      }
+
     }
   });
 }
 
+function RemoveRoom(_hubId,_roomId) {
+  dbo.collection('hub').updateOne({id : _hubId},{$pull: { 'rooms_list.id': _roomId}}, function(errUpdateHub) {
+    if(errUpdateHub)
+    {
+
+    } else {
+      BroadcastRoomDestruction(HubChannelPrefix + _hubId, _roomId);
+    }
+  });
+}
 
 function ExitRoom(data, socket)
 {
