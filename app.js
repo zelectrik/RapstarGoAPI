@@ -150,7 +150,7 @@ io.on('connection', function(socket) {
   /* End Room function */
 
   socket.on('disconnect', function () {
-
+    console.log("User disconnect : " + socket.id);
   });
 });
 
