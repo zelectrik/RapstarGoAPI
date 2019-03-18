@@ -44,10 +44,10 @@ io.on('connection', function(socket) {
   socket.on('pong', function(data){
       console.log("Pong received from client");
   });
-  setTimeout(sendHeartbeat, 25000);
+  setTimeout(sendHeartbeat, 2000);
 
   function sendHeartbeat(){
-      setTimeout(sendHeartbeat, 25000);
+      setTimeout(sendHeartbeat, 2000);
       io.sockets.emit('ping', { beat : 1 });
   }
 
