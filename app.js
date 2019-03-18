@@ -37,6 +37,15 @@ MongoClient.connect(uri, {
   console.log(dbo);
 });
 
+setInterval(function() {
+  sendHeartbeat();
+}, 22000);
+
+function sendHeartbeat(){
+    console.log("emit ping");
+    io.sockets.emit('ping', { beat : 1 });
+}
+
 io.on('connection', function(socket) {
 
   console.log('a user connected');
@@ -44,12 +53,6 @@ io.on('connection', function(socket) {
   socket.on('pong', function(data){
       console.log("Pong received from client");
   });
-  setTimeout(sendHeartbeat, 2000);
-
-  function sendHeartbeat(){
-      setTimeout(sendHeartbeat, 2000);
-      socket.emit('ping', { beat : 1 });
-  }
 
 
   /* Start Login Function */
