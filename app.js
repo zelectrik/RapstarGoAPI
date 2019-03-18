@@ -104,7 +104,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('exitHub', function(data) {
-    ExitHub(data, socket, function(err) {
+    ExitHub(data, socket, true, function(err) {
 
     }); // emit : exitHubResult
   });
@@ -124,7 +124,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('exitRoom', function(data) {
-    ExitRoom(data, socket, function(err) {
+    ExitRoom(data, socket, true, function(err) {
 
     }); // emit : exitRoomResult
   });
@@ -136,7 +136,7 @@ io.on('connection', function(socket) {
   /* End Room function */
 
   socket.on('disconnect', function (socket) {
-    disconnectUser(socket, socket.id, "Disconnect from api", false);
+    disconnectUser(socket, socket.id, "Disconnect from api", false, false);
     console.log("A client has disconnected!");
   });
 });
@@ -314,25 +314,31 @@ function loggedAccount(data, socket)
   });
 }
 
-function disconnectUser(socket, socket_id, message, reset_socket_id)
+function disconnectUser(socket, socket_id, message, reset_socket_id, want_to_emit = true)
 {
-  ExitHub({}, socket, function(err) {
+  ExitHub({}, socket, want_to_emit, function(err) {
     if(reset_socket_id)
     {
       dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
         if(err) console.log(err);
+        if(want_to_emit)
+        {
+          io.to(socket_id).emit('disconnectUser', {
+            success : true,
+            body : {
+              message : message
+            }});
+        }
+      });
+    } else {
+      if(want_to_emit)
+      {
         io.to(socket_id).emit('disconnectUser', {
           success : true,
           body : {
             message : message
           }});
-      });
-    } else {
-      io.to(socket_id).emit('disconnectUser', {
-        success : true,
-        body : {
-          message : message
-        }});
+      }
     }
   });
 }
@@ -710,44 +716,56 @@ function GetHubConnectedTo(data, socket)
   });
 }
 
-function ExitHub(data, socket, callback)
+function ExitHub(data, socket, want_to_emit, callback)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
     if(error) {
-      socket.emit('connectToHubResult', {
-          success : false,
-          body : {
-            message : error
-          }});
+      if(want_to_emit)
+      {
+        socket.emit('connectToHubResult', {
+            success : false,
+            body : {
+              message : error
+            }});
+      }
       callback(null);
     } else {
       var character = {};
       if(result == undefined || result.character_list == undefined)
       {
-        socket.emit('connectToHubResult', {
-            success : false,
-            body : {
-              message : "Not connected"
-            }});
+        if(want_to_emit)
+        {
+          socket.emit('connectToHubResult', {
+              success : false,
+              body : {
+                message : "Not connected"
+              }});
+        }
         callback(null);
       } else {
-        ExitRoom({},socket, function(err) {
+        ExitRoom({},socket, want_to_emit, function(err) {
           dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
             if(errUpdate)
             {
-              socket.emit('exitHubResult', {
-                  success : false,
-                  body : {
-                    message : errUpdate
-                  }});
+              if(want_to_emit)
+              {
+                socket.emit('exitHubResult', {
+                    success : false,
+                    body : {
+                      message : errUpdate
+                    }});
+              }
               callback(null);
             } else {
-              socket.leave(HubChannelPrefix + result.id_current_hub.toString());
-              socket.emit('exitHubResult', {
-                  success : true,
-                  body : {
-                    message : "Success"
-                  }});
+              if(want_to_emit)
+              {
+                socket.leave(HubChannelPrefix + result.id_current_hub.toString());
+                socket.emit('exitHubResult', {
+                    success : true,
+                    body : {
+                      message : "Success"
+                    }});
+              }
               callback(null);
             }
           });
@@ -1039,61 +1057,79 @@ function RemoveRoom(_hubId,_roomId) {
   });
 }
 
-function ExitRoom(data, socket, callback)
+function ExitRoom(data, socket, want_to_emit, callback)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
     if(error) {
-      socket.emit('exitRoomResult', {
-          success : false,
-          body : {
-            message : error
-          }});
-      callback(null);
-    } else {
-      if(user == undefined)
+      if(want_to_emit)
       {
         socket.emit('exitRoomResult', {
             success : false,
             body : {
-              message : "Not connected"
+              message : error
             }});
-        callback(null);
-      } else {
-        if(user.id_current_room == "-1")
+      }
+      callback(null);
+    } else {
+      if(user == undefined)
+      {
+        if(want_to_emit)
         {
           socket.emit('exitRoomResult', {
               success : false,
               body : {
-                message : "Not connected to room"
+                message : "Not connected"
               }});
+        }
+        callback(null);
+      } else {
+        if(user.id_current_room == "-1")
+        {
+          if(want_to_emit)
+          {
+            socket.emit('exitRoomResult', {
+                success : false,
+                body : {
+                  message : "Not connected to room"
+                }});
+          }
           callback(null);
         } else {
           dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : "-1"}}, function(errUpdateUser) {
             if(errUpdateUser)
             {
-              socket.emit('exitRoomResult', {
-                  success : false,
-                  body : {
-                    message : errUpdateUser
-                  }});
+              if(want_to_emit)
+              {
+                socket.emit('exitRoomResult', {
+                    success : false,
+                    body : {
+                      message : errUpdateUser
+                    }});
+              }
               callback(null);
             } else {
               dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : user.id_current_room},{$pull: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdateHub) {
                 if(errUpdateHub)
                 {
-                  socket.emit('exitRoomResult', {
-                      success : false,
-                      body : {
-                        message : errUpdateHub
-                      }});
+                  if(want_to_emit)
+                  {
+                    socket.emit('exitRoomResult', {
+                        success : false,
+                        body : {
+                          message : errUpdateHub
+                        }});
+                  }
                   callback(null);
                 } else {
-                  socket.emit('exitRoomResult', {
-                      success : true,
-                      body : {
-                        message : "Success"
-                      }});
-                  socket.leave(RoomChannelPrefix + user.id_current_room);
+                  if(want_to_emit)
+                  {
+                    socket.emit('exitRoomResult', {
+                        success : true,
+                        body : {
+                          message : "Success"
+                        }});
+                    socket.leave(RoomChannelPrefix + user.id_current_room);
+                  }
                   BroadcastRoomCharacterChanged(user.id_current_hub, user.id_current_room);
                   callback(null);
                 }
