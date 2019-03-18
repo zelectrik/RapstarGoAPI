@@ -113,6 +113,8 @@ io.on('connection', function(socket) {
 
   /* Start Room function */
 
+  // Room state : 0 -> Created can be joinable , 1 -> fighting can't be joinable but have to be update each time, 2 -> Finished can't be joinable
+
   socket.on('createRoom', function(data) {
     CreateRoom(data, socket); // emit : createRoomResult
   });
@@ -125,6 +127,10 @@ io.on('connection', function(socket) {
     ExitRoom(data, socket, function(err) {
 
     }); // emit : exitRoomResult
+  });
+
+  socket.on('launchFight', function(data) {
+    LaunchFight(data, socket); // emit : launchFightResult
   });
 
   /* End Room function */
@@ -788,6 +794,7 @@ function CreateRoom(data, socket)
           room.id = result._id.toString() + Date.now().toString();
           room.user_id_owner = result._id.toString();
           room.user_list = [];
+          room.state = 0;
 
           dbo.collection('hub').updateOne({id : result.id_current_hub}, {$push : {rooms_list : room}},{}, function(err, _success) {
             if(err)
@@ -1095,6 +1102,117 @@ function ExitRoom(data, socket, callback)
           });
 
 
+        }
+      }
+    }
+  });
+}
+
+function BroadcastFightIsLaunched(_roomId)
+{
+  var channelName = RoomChannelPrefix + _roomId.toString();
+  io.to(channelName).emit('fightIsLaunched', {
+      body : {
+        message : "FightIsLaunched"
+      }});
+}
+
+function LaunchFight(data, socket)
+{
+  dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
+    if(error) {
+      socket.emit('launchFightResult', {
+          success : false,
+          body : {
+            message : error
+          }});
+    } else {
+      if(user == undefined)
+      {
+        socket.emit('launchFightResult', {
+            success : false,
+            body : {
+              message : "Not connected"
+            }});
+      } else {
+        if(user.id_current_hub == "-1")
+        {
+          socket.emit('launchFightResult', {
+              success : false,
+              body : {
+                message : "Not connected to hub"
+              }});
+        } else if(user.id_current_room == "-1") {
+          socket.emit('launchFightResult', {
+              success : false,
+              body : {
+                message : "Not connected to room"
+              }});
+        } else {
+          dbo.collection('hub').findOne({id : user.id_current_hub}, function(errorHub, hub) {
+            if(errorHub) {
+              socket.emit('launchFightResult', {
+                  success : false,
+                  body : {
+                    message : errorHub
+                  }});
+            } else {
+              if(hub == undefined)
+              {
+                socket.emit('launchFightResult', {
+                    success : false,
+                    body : {
+                      message : "Can't find hub"
+                    }});
+              } else {
+                var wantedRoom = {};
+                for (let _room of hub.rooms_list)
+                {
+                  if(_room.id == user.id_current_room)
+                  {
+                    wantedRoom = _room;
+                    break;
+                  }
+                }
+                if(wantedRoom.id == undefined)
+                {
+                  socket.emit('launchFightResult', {
+                      success : false,
+                      body : {
+                        message : "Can't find room"
+                      }});
+                } else {
+                  if(wantedRoom.state != 0)
+                  {
+                    socket.emit('launchFightResult', {
+                        success : false,
+                        body : {
+                          message : "State has been already changed"
+                        }});
+                  } else {
+                    dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : wantedRoom.id},{$set : { 'rooms_list.$.state': 1}}, function(errUpdateHub) {
+                      if(errUpdateHub)
+                      {
+                        socket.emit('launchFightResult', {
+                            success : false,
+                            body : {
+                              message : errUpdateHub
+                            }});
+                      } else {
+                        socket.emit('launchFightResult', {
+                            success : true,
+                            body : {
+                              message : "Success"
+                            }});
+                        BroadcastFightIsLaunched(wantedRoom.id);
+                      }
+                    });
+                  }
+                }
+
+              }
+            }
+          });
         }
       }
     }
