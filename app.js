@@ -39,7 +39,6 @@ MongoClient.connect(uri, {
 
   var deltatime = 100;
   setInterval(function() {
-    console.log(deltatime);
     UpdateAllBossAttackInterval(deltatime);
   }, deltatime);
 });
@@ -1319,9 +1318,7 @@ function UpdateAllBossAttackInterval(deltatime)
               var lnewCoolDown = _room.boss.current_cooldown_attack - deltatime;
               if(lnewCoolDown <= 0) // launch attack and reset cooldown
               {
-                dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.boss.current_cooldown_attack': lnewCoolDown}}, function(errUpdateHub) {
-                  console.log("decrease cooldown to " + lnewCoolDown);
-                });
+                
               } else { // decrease cool down
                 dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.boss.current_cooldown_attack': lnewCoolDown}}, function(errUpdateHub) {
                   console.log("decrease cooldown to " + lnewCoolDown);
