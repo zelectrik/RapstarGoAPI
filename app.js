@@ -151,6 +151,7 @@ io.on('connection', function(socket) {
 
   socket.on('disconnect', function () {
     console.log("User disconnect : " + socket.id);
+    disconnectUser(socket, socket.id, "Disconnect from api", true, false)
   });
 });
 
