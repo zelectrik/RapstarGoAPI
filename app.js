@@ -1028,7 +1028,7 @@ function ExitRoom(data, socket)
                     message : errUpdateUser
                   }});
             } else {
-              dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : data.roomId},{$pull: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdateHub) {
+              dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : user.id_current_room},{$pull: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdateHub) {
                 if(errUpdateHub)
                 {
                   socket.emit('exitRoomResult', {
