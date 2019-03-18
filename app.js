@@ -1310,8 +1310,8 @@ function UpdateAllBossAttackInterval(deltatime)
 
       } else {
         res.forEach(function(_hub) {
-          console.log(_hub);
-          _hub.rooms_list.forEach(function(_room) {
+          _hub.rooms_list.forEach(function() {
+            console.log(_room);
             if(_room.state == 1)
             {
               let lnewCoolDown = _room.boss.current_cooldown_attack - deltatime;
