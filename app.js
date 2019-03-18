@@ -823,12 +823,6 @@ function JoinRoom(data, socket)
             body : {
               message : "Not connected"
             }});
-      } else if(user.id_current_room != "-1") {
-        socket.emit('joinRoomResult', {
-            success : false,
-            body : {
-              message : "Already connected to a room."
-            }});
       } else {
         if(data.roomId == undefined || data.roomId.length == 0)
         {
@@ -837,7 +831,23 @@ function JoinRoom(data, socket)
               body : {
                 message : "No room selected"
               }});
-        } else {
+        }  else if(user.id_current_room != "-1") {
+          if(user.id_current_room == data.roomId)
+          {
+            socket.emit('joinRoomResult', {
+                success : false,
+                body : {
+                  message : "Already connected to this room."
+                }});
+          } else {
+            socket.emit('joinRoomResult', {
+                success : false,
+                body : {
+                  message : "Already connected to a room."
+                }});
+          }
+
+        }  else {
           dbo.collection('hub').findOne({id : user.id_current_hub, rooms_list : {$elemMatch: {id : data.roomId}}}, function(err, hub) {
             if(err)
             {
