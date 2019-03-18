@@ -1310,6 +1310,7 @@ function UpdateAllBossAttackInterval(deltatime)
 
       } else {
         res.forEach(function(_hub) {
+          console.log(hub);
           _hub.rooms_list.forEach(function(_room) {
             if(_room.state == 1)
             {
