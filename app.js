@@ -1260,7 +1260,7 @@ function LaunchFight(data, socket)
                           message : "State has been already changed"
                         }});
                   } else {
-                    dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : wantedRoom.id},{$set : { 'rooms_list.$.state': 1}}, function(errUpdateHub) {
+                    dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : wantedRoom.id},{$set : { 'rooms_list.$.state': 1, 'rooms_list.$.boss.current_cooldown_attack' : wantedRoom.boss.cooldown_value}}, function(errUpdateHub) {
                       if(errUpdateHub)
                       {
                         socket.emit('launchFightResult', {
