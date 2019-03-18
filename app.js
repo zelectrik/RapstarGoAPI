@@ -43,7 +43,7 @@ setInterval(function() {
 
 function sendHeartbeat(){
     console.log("emit ping");
-    io.sockets.emit('ping', { beat : 1 });
+    io.emit('ping', { beat : 1 });
 }
 
 io.on('connection', function(socket) {
