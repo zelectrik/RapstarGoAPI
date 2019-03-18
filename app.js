@@ -126,6 +126,7 @@ io.on('connection', function(socket) {
   /* End Room function */
 
   socket.on('disconnect', function (socket) {
+
     console.log("A client has disconnected!");
   });
 });
@@ -305,23 +306,25 @@ function loggedAccount(data, socket)
 
 function disconnectUser(socket_id, message, reset_socket_id)
 {
-  if(reset_socket_id)
-  {
-    dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
-      if(err) console.log(err);
+  ExitHub({}, socket, function() {
+    if(reset_socket_id)
+    {
+      dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
+        if(err) console.log(err);
+        io.to(socket_id).emit('disconnectUser', {
+          success : true,
+          body : {
+            message : message
+          }});
+      });
+    } else {
       io.to(socket_id).emit('disconnectUser', {
         success : true,
         body : {
           message : message
         }});
-    });
-  } else {
-    io.to(socket_id).emit('disconnectUser', {
-      success : true,
-      body : {
-        message : message
-      }});
-  }
+    }
+  });
 }
 
 function CheckAndCreateCharacter(data, socket)
@@ -697,7 +700,7 @@ function GetHubConnectedTo(data, socket)
   });
 }
 
-function ExitHub(data, socket)
+function ExitHub(data, socket, callback)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, result) {
     if(error) {
@@ -716,22 +719,25 @@ function ExitHub(data, socket)
               message : "Not connected"
             }});
       } else {
-        dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
-          if(errUpdate)
-          {
-            socket.emit('exitHubResult', {
-                success : false,
-                body : {
-                  message : errUpdate
-                }});
-          } else {
-            socket.leave(HubChannelPrefix + result.id_current_hub.toString());
-            socket.emit('exitHubResult', {
-                success : true,
-                body : {
-                  message : "Success"
-                }});
-          }
+        ExitRoom({},socket, function() {
+          dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
+            if(errUpdate)
+            {
+              socket.emit('exitHubResult', {
+                  success : false,
+                  body : {
+                    message : errUpdate
+                  }});
+            } else {
+              socket.leave(HubChannelPrefix + result.id_current_hub.toString());
+              socket.emit('exitHubResult', {
+                  success : true,
+                  body : {
+                    message : "Success"
+                  }});
+              callback();
+            }
+          });
         });
       }
     }
@@ -1019,7 +1025,7 @@ function RemoveRoom(_hubId,_roomId) {
   });
 }
 
-function ExitRoom(data, socket)
+function ExitRoom(data, socket, callback)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
     if(error) {
@@ -1070,6 +1076,7 @@ function ExitRoom(data, socket)
                       }});
                   socket.leave(RoomChannelPrefix + user.id_current_room);
                   BroadcastRoomCharacterChanged(user.id_current_hub, user.id_current_room);
+                  callback();
                 }
               });
             }
