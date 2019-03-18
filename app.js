@@ -38,7 +38,18 @@ MongoClient.connect(uri, {
 });
 
 io.on('connection', function(socket) {
+
   console.log('a user connected');
+
+  socket.on('pong', function(data){
+      console.log("Pong received from client");
+  });
+  setTimeout(sendHeartbeat, 25000);
+
+  function sendHeartbeat(){
+      setTimeout(sendHeartbeat, 25000);
+      io.sockets.emit('ping', { beat : 1 });
+  }
 
 
   /* Start Login Function */
