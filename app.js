@@ -48,7 +48,7 @@ io.on('connection', function(socket) {
 
   function sendHeartbeat(){
       setTimeout(sendHeartbeat, 2000);
-      io.sockets.emit('ping', { beat : 1 });
+      socket.emit('ping', { beat : 1 });
   }
 
 
