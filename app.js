@@ -39,7 +39,7 @@ MongoClient.connect(uri, {
 
 setInterval(function() {
   sendHeartbeat();
-}, 22000);
+}, 20000);
 
 function sendHeartbeat(){
     console.log("emit ping");
