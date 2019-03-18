@@ -46,6 +46,11 @@ function sendHeartbeat(){
     io.emit('ping', { beat : 1 });
 }
 
+var deltatime = 100;
+setInterval(function() {
+  UpdateAllBossAttackInterval(deltatime);
+}, deltatime);
+
 io.on('connection', function(socket) {
 
   console.log('a user connected');
@@ -859,7 +864,7 @@ function CreateBoss()
   bossObj.pdv = 500;
   bossObj.damage_per_attack = 5;
   bossObj.current_cooldown_attack = 0.0;
-  bossObj.cooldown_value = 3.0;
+  bossObj.cooldown_value = 3000;
 
   return bossObj;
 }
@@ -1284,6 +1289,38 @@ function LaunchFight(data, socket)
             }
           });
         }
+      }
+    }
+  });
+}
+
+function UpdateAllBossAttackInterval(deltatime)
+{
+  dbo.collection('hub').find({}).toArray(function(err, res) {
+    if(err)
+    {
+
+    } else {
+      if(res == undefined || res.length == 0)
+      {
+
+      } else {
+        res.forEach(function(_hub) {
+          _hub.rooms_list.forEach(function(_room) {
+            if(_room.state == 1)
+            {
+              let lnewCoolDown = _room.boss.current_cooldown_attack - deltatime;
+              if(lnewCoolDown <= 0) // launch attack and reset cooldown
+              {
+
+              } else { // decrease cool down
+                dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.boss.current_cooldown_attack': lnewCoolDown}}, function(errUpdateHub) {
+                  console.log("decrease cooldown to " + lnewCoolDown);
+                });
+              }
+            }
+          });
+        });
       }
     }
   });
