@@ -32,9 +32,16 @@ MongoClient.connect(uri, {
   if (err) throw err;
   dbo = db.db(dbName);
 
+
   http.listen(3000);
   console.log("Listening on port 3000.");
   console.log(dbo);
+
+  var deltatime = 100;
+  setInterval(function() {
+    console.log(deltatime);
+    UpdateAllBossAttackInterval(deltatime);
+  }, deltatime);
 });
 
 setInterval(function() {
@@ -46,10 +53,7 @@ function sendHeartbeat(){
     io.emit('ping', { beat : 1 });
 }
 
-var deltatime = 100;
-setInterval(function() {
-  UpdateAllBossAttackInterval(deltatime);
-}, deltatime);
+
 
 io.on('connection', function(socket) {
 
