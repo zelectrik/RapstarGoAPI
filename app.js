@@ -135,7 +135,7 @@ io.on('connection', function(socket) {
 
   /* End Room function */
 
-  socket.on('disconnect', function (socket) {
+  socket.on('disconnect', function () {
     console.log("-----------------------------");
     console.log(socket.id);
     console.log("A client has disconnected!");
