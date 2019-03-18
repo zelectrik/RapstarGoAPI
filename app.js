@@ -136,7 +136,7 @@ io.on('connection', function(socket) {
   /* End Room function */
 
   socket.on('disconnect', function () {
-    
+
   });
 });
 
@@ -992,6 +992,14 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
           wantedRoom = _room;
           break;
         }
+      }
+      if(wantedRoom.user_list == undefined)
+      {
+        io.to(channelName).emit('getAllUserOfRoom', {
+            success : false,
+            body : {
+              message : "This room doesn't exist"
+            }});
       }
       if(wantedRoom.user_list.length == 0)
       {
