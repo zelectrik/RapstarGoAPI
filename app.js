@@ -1008,6 +1008,7 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
 }
 
 function RemoveRoom(_hubId,_roomId) {
+  console.log("je vais la remove");
   dbo.collection('hub').updateOne({id : _hubId},{$pull: { 'rooms_list.id': _roomId}}, function(errUpdateHub) {
     if(errUpdateHub)
     {
