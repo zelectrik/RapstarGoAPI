@@ -827,6 +827,7 @@ function CreateRoom(data, socket)
           room.user_id_owner = result._id.toString();
           room.user_list = [];
           room.state = 0;
+          room.boss = CreateBoss();
 
           dbo.collection('hub').updateOne({id : result.id_current_hub}, {$push : {rooms_list : room}},{}, function(err, _success) {
             if(err)
@@ -850,6 +851,17 @@ function CreateRoom(data, socket)
       }
     }
   });
+}
+
+function CreateBoss()
+{
+  var bossObj = {};
+  bossObj.pdv = 500;
+  bossObj.damage_per_attack = 5;
+  bossObj.current_cooldown_attack = 0.0;
+  bossObj.cooldown_value = 3.0;
+
+  return bossObj;
 }
 
 function BroadcastRoomCreation(channelName, room)
