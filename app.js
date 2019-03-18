@@ -713,6 +713,7 @@ function ExitHub(data, socket, callback)
           body : {
             message : error
           }});
+      callback(null);
     } else {
       var character = {};
       if(result == undefined || result.character_list == undefined)
@@ -722,6 +723,7 @@ function ExitHub(data, socket, callback)
             body : {
               message : "Not connected"
             }});
+        callback(null);
       } else {
         ExitRoom({},socket, function(err) {
           dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_hub: -1 } }, function(errUpdate) {
@@ -732,6 +734,7 @@ function ExitHub(data, socket, callback)
                   body : {
                     message : errUpdate
                   }});
+              callback(null);
             } else {
               socket.leave(HubChannelPrefix + result.id_current_hub.toString());
               socket.emit('exitHubResult', {
@@ -1038,6 +1041,7 @@ function ExitRoom(data, socket, callback)
           body : {
             message : error
           }});
+      callback(null);
     } else {
       if(user == undefined)
       {
@@ -1046,6 +1050,7 @@ function ExitRoom(data, socket, callback)
             body : {
               message : "Not connected"
             }});
+        callback(null);
       } else {
         if(user.id_current_room == "-1")
         {
@@ -1054,6 +1059,7 @@ function ExitRoom(data, socket, callback)
               body : {
                 message : "Not connected to room"
               }});
+          callback(null);
         } else {
           dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : "-1"}}, function(errUpdateUser) {
             if(errUpdateUser)
@@ -1063,6 +1069,7 @@ function ExitRoom(data, socket, callback)
                   body : {
                     message : errUpdateUser
                   }});
+              callback(null);
             } else {
               dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : user.id_current_room},{$pull: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdateHub) {
                 if(errUpdateHub)
@@ -1072,6 +1079,7 @@ function ExitRoom(data, socket, callback)
                       body : {
                         message : errUpdateHub
                       }});
+                  callback(null);
                 } else {
                   socket.emit('exitRoomResult', {
                       success : true,
