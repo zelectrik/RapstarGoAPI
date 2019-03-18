@@ -56,7 +56,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('disconnectUser', function(data) {
-    disconnectUser(socket.id, "Button dsiconnect press.", true); // emit : loginResult
+    disconnectUser(socket, socket.id, "Button dsiconnect press.", true); // emit : loginResult
   });
   /* End Login Function */
 
@@ -123,7 +123,7 @@ io.on('connection', function(socket) {
 
   socket.on('exitRoom', function(data) {
     ExitRoom(data, socket, function(err) {
-      
+
     }); // emit : exitRoomResult
   });
 
@@ -227,7 +227,7 @@ function login(data, socket)
       else {
         if(val.socket_id != "" && val.socket_id != socket.id)
         {
-          disconnectUser(val.socket_id, "An other user connect to this account.");
+          disconnectUser(socket, val.socket_id, "An other user connect to this account.");
         }
         dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
           if(err) console.log(err);
@@ -308,7 +308,7 @@ function loggedAccount(data, socket)
   });
 }
 
-function disconnectUser(socket_id, message, reset_socket_id)
+function disconnectUser(socket, socket_id, message, reset_socket_id)
 {
   ExitHub({}, socket, function(err) {
     if(reset_socket_id)
