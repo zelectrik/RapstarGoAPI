@@ -1594,6 +1594,7 @@ function UseCharacterAbility(data, socket)
 
 function LaunchAbility(socket, user, character, hub, room, ability)
 {
+  console.log("I have to use ability");
   switch (ability.effect) {
     case 0:
 
