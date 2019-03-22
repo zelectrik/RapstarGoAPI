@@ -521,6 +521,7 @@ function SelectCharacter(data, socket)
             {
               var lAbilities = [];
               character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+              console.log({id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown});
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
