@@ -1514,7 +1514,6 @@ function UseCharacterAbility(data, socket)
             if(character.id == user.id_current_character)
             {
               currentCharacter = character;
-              break;
             }
           });
           if(currentCharacter.id == undefined)
@@ -1535,7 +1534,6 @@ function UseCharacterAbility(data, socket)
                 if(ability.id == data.abilityId)
                 {
                   currentAbility = ability;
-                  break;
                 }
               });
               if(currentAbility.id == undefined)
