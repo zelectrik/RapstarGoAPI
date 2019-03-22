@@ -4,6 +4,7 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongo = require('mongodb');
+var ObjectID = mongo.ObjectID;
 var fs = require('fs');
 
 /* Load json files needed */
@@ -1365,7 +1366,6 @@ function LaunchBossAttack(_hub, _room)
         let pathParam = "character_list";
         pathParam.concat('.', user.id_current_character.toString());
         pathParam.concat('.', 'life');
-
         dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : currentCharacter.id }, {$set  : {'character_list.$.life' : currentCharacter.life}}, function(errUpdateUser) {
 
         });
