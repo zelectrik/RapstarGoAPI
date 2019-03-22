@@ -40,6 +40,7 @@ MongoClient.connect(uri, {
 
   var deltatime = 500;
   setInterval(function() {
+    console.log(Date.now());
     UpdateAllBossAttackInterval(deltatime);
   }, deltatime);
 });
@@ -155,6 +156,11 @@ io.on('connection', function(socket) {
   socket.on('launchFight', function(data) {
     LaunchFight(data, socket); // emit : launchFightResult
   });
+
+  socket.on('useCharacterAbility', function(data) {
+    UseCharacterAbility(data, socket); // emit : useCharacterAbilityResult
+  });
+
 
   /* End Room function */
 
@@ -460,7 +466,7 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          test.push({user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
+          test.push({user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : character.abilities , class_name : mClassesData[character.class_id].name});
         })
         console.log("Get all my characters");
         console.log(val);
@@ -511,7 +517,7 @@ function SelectCharacter(data, socket)
             var _char = currentCharacter;
             if(_char.name != undefined)
             {
-              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : _char.abilities , class_name : mClassesData[_char.class_id].name};
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
@@ -561,7 +567,7 @@ function GetCurrentCharacter(data, socket)
         var _char = currentCharacter;
         if(_char.name != undefined)
         {
-          character = {user_id : _char.user_id ,id : result.id_current_character, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+          character = {user_id : _char.user_id ,id : result.id_current_character, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : _char.abilities , class_name : mClassesData[_char.class_id].name};
           socket.emit('getCurrentCharacterResult', {
               success : true,
               body : {
@@ -1083,7 +1089,7 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
                   {
                     if(_character.id == _userObj.id_current_character)
                     {
-                      CharacterList.push({id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid});
+                      CharacterList.push({id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, abilities : _character.abilities , class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid});
                       break;
                     }
                   }
@@ -1423,9 +1429,9 @@ function LaunchBossAttack(_hub, _room)
 
         if(currentCharacter.life == 0)
         {
-          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, class_name : mClassesData[currentCharacter.class_id].name, alive : false, user_id : user._id.toString()});
+          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : currentCharacter.abilities , class_name : mClassesData[currentCharacter.class_id].name, alive : false, user_id : user._id.toString()});
         } else {
-          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, class_name : mClassesData[currentCharacter.class_id].name, alive : true, user_id : user._id.toString()});
+          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : currentCharacter.abilities , class_name : mClassesData[currentCharacter.class_id].name, alive : true, user_id : user._id.toString()});
         }
       });
       /*
@@ -1439,4 +1445,141 @@ function LaunchBossAttack(_hub, _room)
           }});
     }
   });
+}
+
+function UseCharacterAbility(data, socket)
+{
+  var currentCharacter = {};
+  var wantedRoom;
+  var currentAbility;
+  if(data.abilityId == undefined)
+  {
+    socket.emit('useCharacterAbilityResult', {
+        success : false,
+        body : {
+          message : "No ability selected"
+        }});
+  } else {
+    dbo.collection('user').findOne({socket_id : socket.id}, function(error, user) {
+      if(error) {
+        socket.emit('useCharacterAbilityResult', {
+            success : false,
+            body : {
+              message : error
+            }});
+      } else {
+        if(user.id_current_hub == undefined)
+        {
+          socket.emit('useCharacterAbilityResult', {
+              success : false,
+              body : {
+                message : "Not connected"
+              }});
+        } else if(user.id_current_hub == "-1")
+        {
+          socket.emit('useCharacterAbilityResult', {
+              success : false,
+              body : {
+                message : "No hub connected to"
+              }});
+        } else if(user.id_current_room == "-1")
+        {
+          socket.emit('useCharacterAbilityResult', {
+              success : false,
+              body : {
+                message : "No room connected to"
+              }});
+        } else
+        {
+          user.character_list.forEach(function(character) {
+            if(character.id == user.id_current_character)
+            {
+              currentCharacter = character;
+              break;
+            }
+          });
+          if(currentCharacter.id == undefined)
+          {
+            socket.emit('useCharacterAbilityResult', {
+                success : false,
+                body : {
+                  message : "No character selected"
+                }});
+          } else if (currentCharacter.life <= 0 ) {
+            socket.emit('useCharacterAbilityResult', {
+                success : false,
+                body : {
+                  message : "Character is dead"
+                }});
+          } else {
+              currentCharacter.abilities.forEach(function(ability) {
+                if(ability.id == data.abilityId)
+                {
+                  currentAbility = ability;
+                  break;
+                }
+              });
+              if(currentAbility.id == undefined)
+              {
+                socket.emit('useCharacterAbilityResult', {
+                    success : false,
+                    body : {
+                      message : "Ability selected doesn't exist"
+                    }});
+              } else {
+                dbo.collection('hub').findOne({id : user.id_current_hub, 'rooms_list.id' : user.id_current_room }, function(errorHub, hub) {
+                  if(errorHub)
+                  {
+                    socket.emit('useCharacterAbilityResult', {
+                        success : false,
+                        body : {
+                          message : errorHub
+                        }});
+                  } else {
+                    if(hub.id == undefined)
+                    {
+                      socket.emit('useCharacterAbilityResult', {
+                          success : false,
+                          body : {
+                            message : "Hub connected to doesn't exist"
+                          }});
+                    } else
+                    {
+                      for (let _room of hub.rooms_list)
+                      {
+                        if(_room.id == user.id_current_room)
+                        {
+                          wantedRoom = _room;
+                        }
+                      }
+                      if(wantedRoom.state != 1)
+                      {
+                        socket.emit('useCharacterAbilityResult', {
+                            success : false,
+                            body : {
+                              message : "This room is not in fight"
+                            }});
+                      } else {
+                        LaunchAbility(socket, user, currentCharacter, hub, wantedRoom, currentAbility);
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          }
+        }
+      });
+    }
+}
+
+function LaunchAbility(socket, user, character, hub, room, ability)
+{
+  switch (ability.effect) {
+    case 0:
+
+      break;
+    default:
+
+  }
 }

@@ -12,7 +12,8 @@
         "name" : "Coup de poing",
         "effect" : 0,
         "effectMultiplier" : 1,
-        "cooldown" : 0.5,
+        "lastTimeUsed" : 0,
+        "cooldown" : 500,
         "levelToUnlock" : 0
       },
       {
@@ -20,7 +21,8 @@
         "name" : "Coup de tête",
         "effect" : 0,
         "effectMultiplier" : 2,
-        "cooldown" : 2,
+        "lastTimeUsed" : 0,
+        "cooldown" : 2000,
         "levelToUnlock" : 0
       }
     ]
@@ -39,7 +41,8 @@
         "name" : "Coup de poing",
         "effect" : 0,
         "effectMultiplier" : 1,
-        "cooldown" : 0.5,
+        "lastTimeUsed" : 0,
+        "cooldown" : 500,
         "levelToUnlock" : 0
       },
       {
@@ -47,7 +50,8 @@
         "name" : "Coup de tête",
         "effect" : 0,
         "effectMultiplier" : 2,
-        "cooldown" : 2,
+        "lastTimeUsed" : 0,
+        "cooldown" : 2000,
         "levelToUnlock" : 0
       }
     ]
