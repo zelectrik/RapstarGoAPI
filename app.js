@@ -520,15 +520,13 @@ function SelectCharacter(data, socket)
             if(_char.name != undefined)
             {
               var lAbilities = [];
-              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [], class_name : mClassesData[_char.class_id].name};
-              _char.abilities.forEach(function(ability) {
-                lAbilities.push()
-              });
+              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
                     obj : character,
                     ability1 : {id : _char.abilities[0].id, name : _char.abilities[0].name, effect : _char.abilities[0].effect, effectMultiplier : _char.abilities[0].effectMultiplier, cooldown : _char.abilities[0].cooldown},
+                    ability2 : {id : _char.abilities[1].id, name : _char.abilities[1].name, effect : _char.abilities[1].effect, effectMultiplier : _char.abilities[1].effectMultiplier, cooldown : _char.abilities[1].cooldown},
                     message : "Success."
                   }});
             } else {
