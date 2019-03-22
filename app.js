@@ -1324,8 +1324,6 @@ function UpdateAllBossAttackInterval(deltatime)
 
             if(_room.state == 1)
             {
-              console.log("state 1");
-              console.log(_room);
               var lnewCoolDown = _room.boss.current_cooldown_attack - deltatime;
               if(lnewCoolDown <= 0) // launch attack and reset cooldown
               {
