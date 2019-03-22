@@ -1417,7 +1417,7 @@ function LaunchBossAttack(_hub, _room)
       console.log('---------------Character list--------------------');
       console.log(CharacterList);
       console.log('---------------/Character list/--------------------');
-      io.to(channelName).emit('fightIsLaunched', {
+      io.to(channelName).emit('applyDamageToRoomCharacters', {
           body : {
             obj : CharacterList
           }});
