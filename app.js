@@ -889,7 +889,7 @@ function CreateRoom(data, socket)
 function CreateBoss()
 {
   var bossObj = {};
-  bossObj.pdv = 500;
+  bossObj.life = 500;
   bossObj.damage_per_attack = 10;
   bossObj.current_cooldown_attack = 0.0;
   bossObj.cooldown_value = 500;
@@ -1381,7 +1381,9 @@ function FightIsFinished(_hub, _room, _victory)
   var channelName = RoomChannelPrefix + _room.id.toString();
   if(_victory)
   {
-
+    dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2, 'rooms_list.$.boss.life' : 0}}, function(errUpdateHub) {
+      console.log("Players win!!!");
+    });
   } else {
     dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2}}, function(errUpdateHub) {
       console.log("The boss win!!!");
@@ -1391,6 +1393,19 @@ function FightIsFinished(_hub, _room, _victory)
         victory : false
       }});
   }
+}
+
+function SetBossLife(_hub, _room, _life)
+{
+  var channelName = RoomChannelPrefix + _room.id.toString();
+
+    dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : {'rooms_list.$.boss.life' : _life}}, function(errUpdateHub) {
+      io.to(channelName).emit('bossTakeDamage', {
+        body : {
+          boss_life : _life
+        }});
+    });
+
 }
 
 // Broadcast : applyDamageToRoomCharacters
@@ -1602,6 +1617,21 @@ function LaunchAbility(socket, user, character, hub, room, ability)
   console.log("I have to use ability");
   switch (ability.effect) {
     case 0:
+      var damageToApply = character.damage * ability.effectMultiplier;
+      var remainingBossLife = room.boss.life - damageToApply;
+      dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : character.id, 'character_list.abilities.id' : ability.id }, {$set  : {'character_list.$.lastTimeUsed' : Date.now()}}, function(errUpdateUser) {
+        socket.emit('useCharacterAbilityResult', {
+            success : true,
+            body : {
+              message : "Success"
+        }});
+      });
+      if(remainingBossLife <= 0)
+      {
+        FightIsFinished(hub, room, true);
+      } else {
+        SetBossLife(hub, room, remainingBossLife);
+      }
 
       break;
     default:
