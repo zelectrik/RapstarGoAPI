@@ -37,7 +37,7 @@ MongoClient.connect(uri, {
   console.log("Listening on port 3000.");
   console.log(dbo);
 
-  var deltatime = 100;
+  var deltatime = 500;
   setInterval(function() {
     UpdateAllBossAttackInterval(deltatime);
   }, deltatime);
@@ -421,6 +421,7 @@ function CreateCharacter(_name = "Nom", _classId = 0)
   }
   lCharacter.class_id = _classId;
   lCharacter.life = lClass.initialLife;
+  lCharacter.max_life = lClass.initialLife;
   lCharacter.damage = lClass.initialDamage;
   lCharacter.abilities = [];
 
@@ -1333,4 +1334,24 @@ function UpdateAllBossAttackInterval(deltatime)
       }
     }
   });
+}
+
+function LaunchBossAttack(_hub, _room)
+{
+  var channelName = RoomChannelPrefix + _room.id.toString();
+
+  dbo.collection('user').find({id_current_room : _room.id}).toArray(function(errUsers, UsersList) {
+    if(errUsers)
+    {
+
+    } else {
+      UsersList.forEach
+    }
+  });
+
+  io.to(channelName).emit('applyDamageToUserCharacter', {
+      body : {
+        character_dead : false,
+        character_life : 100
+      }});
 }
