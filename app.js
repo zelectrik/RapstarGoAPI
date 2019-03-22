@@ -525,7 +525,7 @@ function SelectCharacter(data, socket)
                   success : true,
                   body : {
                     obj : character,
-                    ability1 : {id : _char.abilities[0].id, name : _char.abilities[0].name, cooldown : _char.abilities[0].cooldown},
+                    //ability1 : {id : _char.abilities[0].id, name : _char.abilities[0].name, cooldown : _char.abilities[0].cooldown},
                     ability2 : {id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown},
                     message : "Success."
                   }});
