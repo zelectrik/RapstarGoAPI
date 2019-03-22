@@ -522,13 +522,13 @@ function SelectCharacter(data, socket)
               var lAbilities = [];
               character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [], class_name : mClassesData[_char.class_id].name};
               _char.abilities.forEach(function(ability) {
-                lAbilities.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, cooldown : ability.cooldown})
+                lAbilities.push()
               });
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
                     obj : character,
-                    abilities : lAbilities,
+                    ability1 : {id : _char.abilities[0].id, name : _char.abilities[0].name, effect : _char.abilities[0].effect, effectMultiplier : _char.abilities[0].effectMultiplier, cooldown : _char.abilities[0].cooldown},
                     message : "Success."
                   }});
             } else {
