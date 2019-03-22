@@ -1487,7 +1487,14 @@ function UseCharacterAbility(data, socket)
               message : error
             }});
       } else {
-        if(user.id_current_hub == undefined)
+        if(user == null)
+        {
+          socket.emit('useCharacterAbilityResult', {
+              success : false,
+              body : {
+                message : "Not connected"
+              }});
+        } else if(user.id_current_hub == undefined)
         {
           socket.emit('useCharacterAbilityResult', {
               success : false,
