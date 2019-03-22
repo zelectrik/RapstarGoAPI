@@ -466,7 +466,7 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : [] , class_name : mClassesData[character.class_id].name};
+          var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level,  class_name : mClassesData[character.class_id].name};
           test.push(lcharacter);
 
         })
