@@ -450,7 +450,6 @@ function GetAllMyCharacters(data, socket)
           }});
     } else {
       var test = [];
-      var i=0;
       if(val == undefined || val.character_list == undefined) {
         socket.emit('getAllMyCharactersResult', {
             success : false,
@@ -459,8 +458,7 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          test.push({user_id : character.user_id, id : i, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
-          i++;
+          test.push({user_id : character.user_id, id : character.id, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
         })
         console.log("Get all my characters");
         console.log(val);
@@ -493,42 +491,40 @@ function SelectCharacter(data, socket)
               message : error
             }});
       } else {
-        if(result.character_list == undefined || data.idSelected > (result.character_list.length - 1))
-        {
-          socket.emit('selectCharacterResult', {
-              success : false,
-              body : {
-                message : "Character not existing."
-              }});
-        } else {
-          dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_character: data.idSelected } }, function(err, res) {
-            if(err) {
+        dbo.collection('user').updateOne({socket_id : socket.id}, { $set: { id_current_character: data.idSelected } }, function(err, res) {
+          if(err) {
+            socket.emit('selectCharacterResult', {
+                success : false,
+                body : {
+                  message : err
+                }});
+          } else {
+            var currentCharacter = {};
+            result.character_list.forEach(function(character) {
+              if(character.id == result.id_current_character)
+              {
+                currentCharacter = character;
+              }
+            });
+            var _char = currentCharacter;
+            if(_char != undefined)
+            {
+              character = {user_id : _char.user_id ,id : data.idSelected, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+              socket.emit('selectCharacterResult', {
+                  success : true,
+                  body : {
+                    obj : character,
+                    message : "Success."
+                  }});
+            } else {
               socket.emit('selectCharacterResult', {
                   success : false,
                   body : {
-                    message : err
+                    message : "Character not existing."
                   }});
-            } else {
-              var _char = result.character_list[data.idSelected];
-              if(_char != undefined)
-              {
-                character = {user_id : _char.user_id ,id : data.idSelected, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
-                socket.emit('selectCharacterResult', {
-                    success : true,
-                    body : {
-                      obj : character,
-                      message : "Success."
-                    }});
-              } else {
-                socket.emit('selectCharacterResult', {
-                    success : false,
-                    body : {
-                      message : "Character not existing."
-                    }});
-              }
             }
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -553,7 +549,14 @@ function GetCurrentCharacter(data, socket)
               message : "Not connected"
             }});
       } else {
-        var _char = result.character_list[result.id_current_character];
+        var currentCharacter = {};
+        result.character_list.forEach(function(character) {
+          if(character.id == result.id_current_character)
+          {
+            currentCharacter = character;
+          }
+        });
+        var _char = currentCharacter;
         if(_char != undefined)
         {
           character = {user_id : _char.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
@@ -1067,15 +1070,13 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
               {
                 if(_userid == _userObj._id.toString())
                 {
-                  var characterId = 0;
                   for(let _character of _userObj.character_list)
                   {
-                    if(characterId == _userObj.id_current_character)
+                    if(_character.id == _userObj.id_current_character)
                     {
                       CharacterList.push({id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid});
                       break;
                     }
-                    characterId++;
                   }
                   break;
                 }
@@ -1354,16 +1355,19 @@ function LaunchBossAttack(_hub, _room)
 
     } else {
       UsersList.forEach(function(user) {
-        let currentCharacter = user.character_list[user.id_current_character];
+        var currentCharacter = {};
+        user.character_list.forEach(function(character) {
+          if(character.id == user.id_current_character)
+          {
+            currentCharacter = character;
+          }
+        });
         if(currentCharacter.life - _room.boss.damage_per_attack <= 0 )
         {
           currentCharacter.life = 0;
         } else {
           currentCharacter.life -= _room.boss.damage_per_attack;
         }
-        let pathParam = "character_list";
-        pathParam.concat('.', user.id_current_character.toString());
-        pathParam.concat('.', 'life');
         dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : currentCharacter.id }, {$set  : {'character_list.$.life' : currentCharacter.life}}, function(errUpdateUser) {
 
         });
@@ -1372,7 +1376,13 @@ function LaunchBossAttack(_hub, _room)
 
       var CharacterList = [];
       UsersList.forEach(function(user) {
-        let currentCharacter = user.character_list[user.id_current_character];
+        var currentCharacter = {};
+        user.character_list.forEach(function(character) {
+          if(character.id == user.id_current_character)
+          {
+            currentCharacter = character;
+          }
+        });
 
         if(currentCharacter.life == 0)
         {
