@@ -520,7 +520,7 @@ function SelectCharacter(data, socket)
             if(_char.name != undefined)
             {
               var lAbilities = [];
-              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, ability1 : {id : _char.abilities[0].id, name : _char.abilities[0].name, cooldown : _char.abilities[0].cooldown}, class_name : mClassesData[_char.class_id].name};
+              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, ability1 : {id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown}, class_name : mClassesData[_char.class_id].name};
               console.log({id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown});
               socket.emit('selectCharacterResult', {
                   success : true,
