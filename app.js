@@ -528,7 +528,6 @@ function SelectCharacter(data, socket)
                   success : true,
                   body : {
                     obj : character,
-                    abilities : lAbilities,
                     message : "Success."
                   }});
             } else {
