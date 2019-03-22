@@ -984,7 +984,7 @@ function JoinRoom(data, socket)
                             message : errUpdate
                           }});
                     } else {
-                      dbo.collection('user').updateOne({socket_id : socket.id, 'character_list.id' : user.id_current_character},{$set : {id_current_room : data.roomId, 'character_list.$.life': 'character_list.$.max_life'}}, function(errUpdateUser) {
+                      dbo.collection('user').updateOne({socket_id : socket.id, 'character_list.id' : user.id_current_character},{$set : {id_current_room : data.roomId, 'character_list.$.life': character_list.$.max_life}}, function(errUpdateUser) {
                         if(errUpdateUser)
                         {
                           socket.emit('joinRoomResult', {
