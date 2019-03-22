@@ -466,7 +466,12 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          test.push({user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : character.abilities , class_name : mClassesData[character.class_id].name});
+          var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : [] , class_name : mClassesData[character.class_id].name};
+          character.Abilities.forEach(function(ability) {
+            lcharacter.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
+          });
+          test.push(lcharacter);
+
         })
         console.log("Get all my characters");
         console.log(val);
@@ -517,7 +522,10 @@ function SelectCharacter(data, socket)
             var _char = currentCharacter;
             if(_char.name != undefined)
             {
-              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : _char.abilities , class_name : mClassesData[_char.class_id].name};
+              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [] , class_name : mClassesData[_char.class_id].name};
+              _char.Abilities.forEach(function(ability) {
+                character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
+              });
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
@@ -567,7 +575,10 @@ function GetCurrentCharacter(data, socket)
         var _char = currentCharacter;
         if(_char.name != undefined)
         {
-          character = {user_id : _char.user_id ,id : result.id_current_character, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : _char.abilities , class_name : mClassesData[_char.class_id].name};
+          character = {user_id : _char.user_id ,id : result.id_current_character, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [] , class_name : mClassesData[_char.class_id].name};
+          _char.Abilities.forEach(function(ability) {
+            character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
+          });
           socket.emit('getCurrentCharacterResult', {
               success : true,
               body : {
@@ -1089,7 +1100,11 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
                   {
                     if(_character.id == _userObj.id_current_character)
                     {
-                      CharacterList.push({id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, abilities : _character.abilities , class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid});
+                      let character = {id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, abilities : [] , class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid};
+                      _character.Abilities.forEach(function(ability) {
+                        character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
+                      });
+                      CharacterList.push(character);
                       break;
                     }
                   }
@@ -1426,13 +1441,17 @@ function LaunchBossAttack(_hub, _room)
             currentCharacter = character;
           }
         });
-
+        var character = {};
         if(currentCharacter.life == 0)
         {
-          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : currentCharacter.abilities , class_name : mClassesData[currentCharacter.class_id].name, alive : false, user_id : user._id.toString()});
+          character = {id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : [] , class_name : mClassesData[currentCharacter.class_id].name, alive : false, user_id : user._id.toString()};
         } else {
-          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : currentCharacter.abilities , class_name : mClassesData[currentCharacter.class_id].name, alive : true, user_id : user._id.toString()});
+          character = {id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : [] , class_name : mClassesData[currentCharacter.class_id].name, alive : true, user_id : user._id.toString()};
         }
+        currentCharacter.Abilities.forEach(function(ability) {
+          character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
+        });
+        CharacterList.push(character);
       });
       /*
       */
