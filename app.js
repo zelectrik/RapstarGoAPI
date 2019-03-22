@@ -391,7 +391,7 @@ function CheckAndCreateCharacter(data, socket)
               message : "Not connected, can't create character."
             }});
       } else {
-        var newCharacter = CreateCharacter(data.name, data.classId);
+        var newCharacter = CreateCharacter(val.character_list.count, data.name, data.classId);
         newCharacter.user_id = val._id.toString();
         dbo.collection('user').updateOne(val, {$push : {character_list : newCharacter}},{}, function(err, _success) {
           if(err) console.log(err);
@@ -407,9 +407,10 @@ function CheckAndCreateCharacter(data, socket)
   }
 }
 
-function CreateCharacter(_name = "Nom", _classId = 0)
+function CreateCharacter(id, _name = "Nom", _classId = 0)
 {
   var lCharacter = {};
+  lCharacter.id = id;
   lCharacter.name = _name;
   lCharacter.level = 1;
 
@@ -960,37 +961,45 @@ function JoinRoom(data, socket)
                     break;
                   }
                 }
-                dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : data.roomId},{$push: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdate) {
-                  if(errUpdate)
-                  {
-                    socket.emit('joinRoomResult', {
-                        success : false,
-                        body : {
-                          message : errUpdate
-                        }});
-                  } else {
-                    dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : data.roomId}}, function(errUpdateUser) {
-                      if(errUpdateUser)
-                      {
-                        socket.emit('joinRoomResult', {
-                            success : false,
-                            body : {
-                              message : errUpdateUser
-                            }});
-                      } else {
-                        socket.join(RoomChannelPrefix + data.roomId);
-                        socket.emit('joinRoomResult', {
-                            success : true,
-                            body : {
-                              obj : {id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
-                              message : "Success"
-                            }});
-                        BroadcastRoomCharacterChanged(user.id_current_hub, data.roomId);
-                      }
-                    });
-                  }
-                });
-
+                if(wantedRoom.state != 0)
+                {
+                  socket.emit('joinRoomResult', {
+                      success : false,
+                      body : {
+                        message : "This room is not joinable"
+                      }});
+                } else {
+                  dbo.collection('hub').updateOne({id : user.id_current_hub, 'rooms_list.id' : data.roomId},{$push: { 'rooms_list.$.user_list': user._id.toString()}}, function(errUpdate) {
+                    if(errUpdate)
+                    {
+                      socket.emit('joinRoomResult', {
+                          success : false,
+                          body : {
+                            message : errUpdate
+                          }});
+                    } else {
+                      dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : data.roomId}}, function(errUpdateUser) {
+                        if(errUpdateUser)
+                        {
+                          socket.emit('joinRoomResult', {
+                              success : false,
+                              body : {
+                                message : errUpdateUser
+                              }});
+                        } else {
+                          socket.join(RoomChannelPrefix + data.roomId);
+                          socket.emit('joinRoomResult', {
+                              success : true,
+                              body : {
+                                obj : {id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
+                                message : "Success"
+                              }});
+                          BroadcastRoomCharacterChanged(user.id_current_hub, data.roomId);
+                        }
+                      });
+                    }
+                  });
+                }
               }
             }
           });
@@ -1062,7 +1071,7 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
                   {
                     if(characterId == _userObj.id_current_character)
                     {
-                      CharacterList.push({id : _userObj.id_current_character, name : _character.name, level : _character.level, class_name : mClassesData[_character.class_id].name, user_id : _userid});
+                      CharacterList.push({id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid});
                       break;
                     }
                     characterId++;
@@ -1345,13 +1354,44 @@ function LaunchBossAttack(_hub, _room)
     {
 
     } else {
-      UsersList.forEach
+      UsersList.forEach(function(user) {
+        let currentCharacter = user.character_list[user.id_current_character];
+        if(currentCharacter.life - _room.boss.damage_per_attack <= 0 )
+        {
+          currentCharacter.life = 0;
+        } else {
+          currentCharacter.life -= _room.boss.damage_per_attack;
+        }
+        let pathParam = "character_list";
+        pathParam.concat('.', user.id_current_character.toString());
+        pathParam.concat('.', 'life');
+
+        dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : currentCharacter.id }, {$set  : {'character_list.$.life' : currentCharacter.life}}, function(errUpdateUser) {
+
+        });
+      });
+
+
+      var CharacterList = [];
+      UsersList.forEach(function(user) {
+        let currentCharacter = user.character_list[user.id_current_character];
+
+        if(currentCharacter.life == 0)
+        {
+          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, class_name : mClassesData[currentCharacter.class_id].name, alive : false, user_id : user._id.toString()});
+        } else {
+          CharacterList.push({id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, class_name : mClassesData[currentCharacter.class_id].name, alive : true, user_id : user._id.toString()});
+        }
+      });
+      /*
+      */
+      console.log('---------------Character list--------------------');
+      console.log(CharacterList);
+      console.log('---------------/Character list/--------------------');
+      io.to(channelName).emit('applyDamageToUserCharacter', {
+          body : {
+            obj : CharacterList
+          }});
     }
   });
-
-  io.to(channelName).emit('applyDamageToUserCharacter', {
-      body : {
-        character_dead : false,
-        character_life : 100
-      }});
 }
