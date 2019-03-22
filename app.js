@@ -503,7 +503,7 @@ function SelectCharacter(data, socket)
           } else {
             var currentCharacter = {};
             result.character_list.forEach(function(character) {
-              if(character.id == result.id_current_character)
+              if(character.id == data.idSelected)
               {
                 currentCharacter = character;
               }
