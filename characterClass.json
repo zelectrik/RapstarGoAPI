@@ -18,7 +18,7 @@
       },
       {
         "id" : 1,
-        "name" : "Coup de tête",
+        "name" : "Coup de tete",
         "effect" : 0,
         "effectMultiplier" : 2,
         "lastTimeUsed" : 0,
@@ -47,7 +47,7 @@
       },
       {
         "id" : 1,
-        "name" : "Coup de tête",
+        "name" : "Coup de tete",
         "effect" : 0,
         "effectMultiplier" : 2,
         "lastTimeUsed" : 0,

@@ -466,7 +466,10 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level,  class_name : mClassesData[character.class_id].name};
+          var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : [],  class_name : mClassesData[character.class_id].name};
+          character.abilities.forEach(function(ability) {
+            lcharacter.abilities.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, cooldown : ability.cooldown})
+          });
           test.push(lcharacter);
 
         })
@@ -519,15 +522,14 @@ function SelectCharacter(data, socket)
             var _char = currentCharacter;
             if(_char.name != undefined)
             {
-              var lAbilities = [];
-              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, ability1 : {id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown}, class_name : mClassesData[_char.class_id].name};
-              console.log({id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown});
+              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [], class_name : mClassesData[_char.class_id].name};
+              _char.abilities.forEach(function(ability) {
+                character.abilities.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, cooldown : ability.cooldown})
+              });
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
                     obj : character
-                    //ability2 : {id : _char.abilities[1].id, name : _char.abilities[1].name, cooldown : _char.abilities[1].cooldown}
-                    //ability1 :
 
                   }});
             } else {
