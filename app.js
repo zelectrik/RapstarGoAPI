@@ -1059,7 +1059,7 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
               message : "This room doesn't exist"
             }});
       }
-      if(wantedRoom.user_list.length == 0)
+      else if(wantedRoom.user_list.length == 0)
       {
         RemoveRoom(_hubId,_roomId);
       } else {
