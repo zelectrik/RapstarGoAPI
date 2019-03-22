@@ -258,16 +258,18 @@ function login(data, socket)
         {
           disconnectUser(socket, val.socket_id, "An other user connect to this account.");
         }
-        dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
-          if(err) console.log(err);
-          console.log("Connect to " + val.pseudo);
-          socket.emit('loginResult', {
-            success : true,
-            body : {
-              message : "Connect to " + val.pseudo,
-              socket_id : socket.id,
-              pseudo : val.pseudo
-            }});
+        ExitHub({}, socket, false, function(err) {
+          dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
+            if(err) console.log(err);
+            console.log("Connect to " + val.pseudo);
+            socket.emit('loginResult', {
+              success : true,
+              body : {
+                message : "Connect to " + val.pseudo,
+                socket_id : socket.id,
+                pseudo : val.pseudo
+              }});
+          });
         });
       }
     });
@@ -982,7 +984,7 @@ function JoinRoom(data, socket)
                             message : errUpdate
                           }});
                     } else {
-                      dbo.collection('user').updateOne({socket_id : socket.id},{$set : {id_current_room : data.roomId}}, function(errUpdateUser) {
+                      dbo.collection('user').updateOne({socket_id : socket.id, 'character_list.id' : user.id_current_character},{$set : {id_current_room : data.roomId, 'character_list.$.life': 'character_list.$.max_life'}}, function(errUpdateUser) {
                         if(errUpdateUser)
                         {
                           socket.emit('joinRoomResult', {
@@ -1354,6 +1356,7 @@ function LaunchBossAttack(_hub, _room)
     {
 
     } else {
+      var isAllCharacterDead = true;
       UsersList.forEach(function(user) {
         var currentCharacter = {};
         user.character_list.forEach(function(character) {
@@ -1366,11 +1369,21 @@ function LaunchBossAttack(_hub, _room)
         {
           currentCharacter.life = 0;
         } else {
+          isAllCharacterDead = false;
           currentCharacter.life -= _room.boss.damage_per_attack;
         }
         dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : currentCharacter.id }, {$set  : {'character_list.$.life' : currentCharacter.life}}, function(errUpdateUser) {
 
         });
+
+        if(isAllCharacterDead)
+        {
+          dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2}}, function(errUpdateHub) {
+            console.log("The boss win!!!");
+          });
+          // Broadcast all players are dead and fight is loose
+
+        }
       });
 
 
