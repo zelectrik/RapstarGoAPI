@@ -873,9 +873,9 @@ function CreateBoss()
 {
   var bossObj = {};
   bossObj.pdv = 500;
-  bossObj.damage_per_attack = 5;
+  bossObj.damage_per_attack = 10;
   bossObj.current_cooldown_attack = 0.0;
-  bossObj.cooldown_value = 3000;
+  bossObj.cooldown_value = 500;
 
   return bossObj;
 }
@@ -1354,6 +1354,24 @@ function UpdateAllBossAttackInterval(deltatime)
   });
 }
 
+// Broadcast : fightIsFinished
+function FightIsFinished(_hub, _room, _victory)
+{
+  var channelName = RoomChannelPrefix + _room.id.toString();
+  if(_victory)
+  {
+
+  } else {
+    dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2}}, function(errUpdateHub) {
+      console.log("The boss win!!!");
+    });
+    io.to(channelName).emit('fightIsFinished', {
+      body : {
+        victory : false
+      }});
+  }
+}
+
 // Broadcast : applyDamageToRoomCharacters
 function LaunchBossAttack(_hub, _room)
 {
@@ -1386,9 +1404,7 @@ function LaunchBossAttack(_hub, _room)
 
         if(isAllCharacterDead)
         {
-          dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2}}, function(errUpdateHub) {
-            console.log("The boss win!!!");
-          });
+          FightIsFinished(_hub, _room, false);
           // Broadcast all players are dead and fight is loose
 
         }
