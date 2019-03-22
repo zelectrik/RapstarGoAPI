@@ -467,7 +467,7 @@ function GetAllMyCharacters(data, socket)
       } else {
         val.character_list.forEach(function(character) {
           var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : [] , class_name : mClassesData[character.class_id].name};
-          character.Abilities.forEach(function(ability) {
+          character.abilities.forEach(function(ability) {
             lcharacter.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
           });
           test.push(lcharacter);
@@ -523,7 +523,7 @@ function SelectCharacter(data, socket)
             if(_char.name != undefined)
             {
               character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [] , class_name : mClassesData[_char.class_id].name};
-              _char.Abilities.forEach(function(ability) {
+              _char.abilities.forEach(function(ability) {
                 character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
               });
               socket.emit('selectCharacterResult', {
@@ -576,7 +576,7 @@ function GetCurrentCharacter(data, socket)
         if(_char.name != undefined)
         {
           character = {user_id : _char.user_id ,id : result.id_current_character, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, abilities : [] , class_name : mClassesData[_char.class_id].name};
-          _char.Abilities.forEach(function(ability) {
+          _char.abilities.forEach(function(ability) {
             character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
           });
           socket.emit('getCurrentCharacterResult', {
@@ -1101,7 +1101,7 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
                     if(_character.id == _userObj.id_current_character)
                     {
                       let character = {id : _userObj.id_current_character, name : _character.name, current_life : _character.life, level : _character.level, abilities : [] , class_name : mClassesData[_character.class_id].name, alive : true, user_id : _userid};
-                      _character.Abilities.forEach(function(ability) {
+                      _character.abilities.forEach(function(ability) {
                         character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
                       });
                       CharacterList.push(character);
@@ -1448,7 +1448,7 @@ function LaunchBossAttack(_hub, _room)
         } else {
           character = {id : user.id_current_character, name : currentCharacter.name, current_life : currentCharacter.life, level : currentCharacter.level, abilities : [] , class_name : mClassesData[currentCharacter.class_id].name, alive : true, user_id : user._id.toString()};
         }
-        currentCharacter.Abilities.forEach(function(ability) {
+        currentCharacter.abilities.forEach(function(ability) {
           character.ability.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, lastTimeUsed : ability.lastTimeUsed, cooldown : ability.cooldown})
         });
         CharacterList.push(character);
