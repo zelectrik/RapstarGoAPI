@@ -460,7 +460,7 @@ function GetAllMyCharacters(data, socket)
             }});
       } else {
         val.character_list.forEach(function(character) {
-          test.push({user_id : character.user_id, id : character.id, name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
+          test.push({user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, class_name : mClassesData[character.class_id].name});
         })
         console.log("Get all my characters");
         console.log(val);
@@ -511,7 +511,7 @@ function SelectCharacter(data, socket)
             var _char = currentCharacter;
             if(_char.name != undefined)
             {
-              character = {user_id : _char.user_id ,id : data.idSelected, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+              character = {user_id : _char.user_id ,id : data.idSelected, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
               socket.emit('selectCharacterResult', {
                   success : true,
                   body : {
@@ -561,7 +561,7 @@ function GetCurrentCharacter(data, socket)
         var _char = currentCharacter;
         if(_char.name != undefined)
         {
-          character = {user_id : _char.user_id ,id : result.id_current_character, name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
+          character = {user_id : _char.user_id ,id : result.id_current_character, current_life : _char.life, alive : (_char.life > 0), name : _char.name, level : _char.level, class_name : mClassesData[_char.class_id].name};
           socket.emit('getCurrentCharacterResult', {
               success : true,
               body : {
@@ -1354,6 +1354,7 @@ function UpdateAllBossAttackInterval(deltatime)
   });
 }
 
+// Broadcast : applyDamageToRoomCharacters
 function LaunchBossAttack(_hub, _room)
 {
   var channelName = RoomChannelPrefix + _room.id.toString();
@@ -1416,7 +1417,7 @@ function LaunchBossAttack(_hub, _room)
       console.log('---------------Character list--------------------');
       console.log(CharacterList);
       console.log('---------------/Character list/--------------------');
-      io.to(channelName).emit('applyDamageToUserCharacter', {
+      io.to(channelName).emit('applyDamageToRoomCharacters', {
           body : {
             obj : CharacterList
           }});
