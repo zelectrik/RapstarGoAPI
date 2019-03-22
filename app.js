@@ -40,7 +40,7 @@ MongoClient.connect(uri, {
 
   var deltatime = 500;
   setInterval(function() {
-    console.log(Date.now());
+    //console.log(Date.now());
     UpdateAllBossAttackInterval(deltatime);
   }, deltatime);
 });
@@ -467,9 +467,9 @@ function GetAllMyCharacters(data, socket)
       } else {
         val.character_list.forEach(function(character) {
           var lcharacter = {user_id : character.user_id, id : character.id, current_life : character.life, alive : (character.life > 0), name : character.name, level : character.level, abilities : [] , class_name : mClassesData[character.class_id].name};
-          character.abilities.forEach(function(ability) {
+          /*character.abilities.forEach(function(ability) {
             lcharacter.abilities.push({id : ability.id, name : ability.name, effect : ability.effect, effectMultiplier : ability.effectMultiplier, cooldown : ability.cooldown})
-          });
+          });*/
           test.push(lcharacter);
 
         })
