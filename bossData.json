@@ -1,0 +1,9 @@
+{
+  "easy" :
+  {
+    "life" : 500,
+    "damage_per_attack" : 10,
+    "current_cooldown_attack" : 0.0,
+    "cooldown_value" : 3000
+  }
+}

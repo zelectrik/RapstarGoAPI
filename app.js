@@ -13,6 +13,11 @@ var fs = require('fs');
 // Define to JSON type
  var mClassesData = JSON.parse(classesContents);
 
+ // Get content from file
+  var bossContents = fs.readFileSync("bossData.json");
+ // Define to JSON type
+  var mBossData = JSON.parse(bossContents);
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
@@ -888,11 +893,7 @@ function CreateRoom(data, socket)
 
 function CreateBoss()
 {
-  var bossObj = {};
-  bossObj.life = 500;
-  bossObj.damage_per_attack = 10;
-  bossObj.current_cooldown_attack = 0.0;
-  bossObj.cooldown_value = 500;
+  var bossObj = mBossData.easy;
 
   return bossObj;
 }
