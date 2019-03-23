@@ -1565,6 +1565,12 @@ function UseCharacterAbility(data, socket)
                     body : {
                       message : "Ability selected doesn't exist"
                     }});
+              } else if(Date.now() - currentAbility.lastTimeUsed < currentAbility.cooldown) {
+                socket.emit('useCharacterAbilityResult', {
+                    success : false,
+                    body : {
+                      message : "Ability is reloading"
+                    }});
               } else {
                 dbo.collection('hub').findOne({id : user.id_current_hub, 'rooms_list.id' : user.id_current_room }, function(errorHub, hub) {
                   if(errorHub)
