@@ -1385,6 +1385,10 @@ function FightIsFinished(_hub, _room, _victory)
     dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2, 'rooms_list.$.boss.life' : 0}}, function(errUpdateHub) {
       console.log("Players win!!!");
     });
+    io.to(channelName).emit('fightIsFinished', {
+      body : {
+        victory : true
+      }});
   } else {
     dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2}}, function(errUpdateHub) {
       console.log("The boss win!!!");
