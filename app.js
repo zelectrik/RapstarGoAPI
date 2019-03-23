@@ -40,12 +40,9 @@ MongoClient.connect(uri, {
 
 
   http.listen(3000);
-  console.log("Listening on port 3000.");
-  console.log(dbo);
 
   var deltatime = 500;
   setInterval(function() {
-    //console.log(Date.now());
     UpdateAllBossAttackInterval(deltatime);
   }, deltatime);
 });
@@ -55,18 +52,13 @@ setInterval(function() {
 }, 20000);
 
 function sendHeartbeat(){
-    console.log("emit ping");
     io.emit('ping', { beat : 1 });
 }
 
 
 
 io.on('connection', function(socket) {
-
-  console.log('a user connected');
-
   socket.on('pong', function(data){
-      console.log("Pong received from client");
   });
 
 
@@ -170,14 +162,12 @@ io.on('connection', function(socket) {
   /* End Room function */
 
   socket.on('disconnect', function () {
-    console.log("User disconnect : " + socket.id);
     //disconnectUser(socket, socket.id, "Disconnect from api", true, false)
   });
 });
 
 function createAccount(data, socket)
 {
-  console.log(data);
   if(data.password == undefined || data.password == "") // Check if password is enter
   {
     socket.emit('createAccountResult', {
@@ -193,9 +183,12 @@ function createAccount(data, socket)
       }});
   } else {
     dbo.collection('user').findOne({pseudo : data.pseudo}, function(err, val) {
-      if (err) console.log(err);
+      if (err)
+      {
+
+      }
       /* Permit to disconnect user if use this socket for test */
-      if(val != null)
+      else if(val != null)
       {
         socket.emit('createAccountResult', {
           success : false,
@@ -204,23 +197,29 @@ function createAccount(data, socket)
           }});
       } else {
         dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
-          if (err) console.log(err);
+          if (err) {
+
+          }
           /* Permit to disconnect user if use this socket for test */
-          if(val != null && val.pseudo != data.pseudo)
+          else if(val != null && val.pseudo != data.pseudo)
           {
             dbo.collection('user').updateOne(val, {$set : {socket_id : ""}},{}, function(err) {
-              if(err) console.log(err);
-              socket.emit('disconnectUser', {
-                success : true,
-                body : {
-                  message : "Disconnect from previous account."
-                }});
+              if(err)
+              {
+
+              } else {
+                socket.emit('disconnectUser', {
+                  success : true,
+                  body : {
+                    message : "Disconnect from previous account."
+                  }});
+              }
             });
           }
           dbo.collection('user').insertOne({pseudo : data.pseudo, password : data.password, socket_id : socket.id, character_list : [], id_current_character : 0, id_current_hub : -1, id_current_room : -1}, function(err) {
             if(err)
             {
-              console.log(err);
+
             } else {
               socket.emit('createAccountResult', {
                 success : true,
@@ -240,23 +239,26 @@ function createAccount(data, socket)
 function login(data, socket)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
-    if (err) console.log(err);
+    if (err) {
+
+    }
     /* Permit to disconnect user if use this socket for test */
-    if(val != null && val.pseudo != data.pseudo)
+    else if(val != null && val.pseudo != data.pseudo)
     {
       dbo.collection('user').updateOne(val, {$set : {socket_id : ""}},{}, function(err) {
-        if(err) console.log(err);
-        console.log("Disconnect from " + val.pseudo);
+        if(err) {
+
+        }
       });
     }
 
     /* Check if login and password are good */
     dbo.collection('user').findOne({pseudo : data.pseudo, password : data.password}, function(err, val) {
-      if (err) console.log(err);
+      if (err) {
+      }
       /*Wrong connection*/
-      if(val == null)
+      else if(val == null)
       {
-        console.log("Mauvais pseudo ou mot de passe.");
         socket.emit('loginResult', {
           success : false,
           body : {
@@ -271,15 +273,21 @@ function login(data, socket)
         }
         ExitHub({}, socket, false, function(err) {
           dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
-            if(err) console.log(err);
-            console.log("Connect to " + val.pseudo);
-            socket.emit('loginResult', {
-              success : true,
-              body : {
-                message : "Connect to " + val.pseudo,
-                socket_id : socket.id,
-                pseudo : val.pseudo
-              }});
+            if(err) {
+              socket.emit('loginResult', {
+                success : false,
+                body : {
+                  message : err
+                }});
+            } else {
+              socket.emit('loginResult', {
+                success : true,
+                body : {
+                  message : "Connect to " + val.pseudo,
+                  socket_id : socket.id,
+                  pseudo : val.pseudo
+                }});
+            }
           });
         });
       }
@@ -300,23 +308,30 @@ function reconnection(data, socket)
       }});
   } else {
     dbo.collection('user').findOne({pseudo : data.pseudo ,socket_id : data.socket_id}, function(err, val) {
-      if (err) console.log(err);
+      if (err) {
+      }
       /* Permit to disconnect user if use this socket for test */
-      if(val != null)
+      else if(val != null)
       {
         dbo.collection('user').updateOne(val, {$set : {socket_id : socket.id}},{}, function(err) {
-          if(err) console.log(err);
-          console.log("Reconnection from " + val.pseudo);
-          socket.emit('reconnectionResult', {
-            success : true,
-            body : {
-              new_socket_id : true,
-              message : "Reconnect to " + val.pseudo,
-              socket_id : socket.id
-            }});
+          if(err) {
+            socket.emit('reconnectionResult', {
+              success : true,
+              body : {
+                new_socket_id : false,
+                message : err
+              }});
+          } else {
+            socket.emit('reconnectionResult', {
+              success : true,
+              body : {
+                new_socket_id : true,
+                message : "Reconnect to " + val.pseudo,
+                socket_id : socket.id
+              }});
+          }
         });
       } else {
-        console.log("Can't reconnect ");
         socket.emit('reconnectionResult', {
           success : false,
           body : {
@@ -330,17 +345,22 @@ function reconnection(data, socket)
 function loggedAccount(data, socket)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
-    if (err) console.log(err);
-    if(val == null)
+    if (err)
     {
-      console.log("Connecté à aucun compte.");
+      socket.emit('loggedAccountResult', {
+          success : false,
+          body : {
+            message : err
+          }});
+    }
+    else if(val == null)
+    {
       socket.emit('loggedAccountResult', {
           success : false,
           body : {
             message : "Not connected."
           }});
     } else {
-      console.log("Connecté à " + val.pseudo);
       socket.emit('loggedAccountResult', {
           success : true,
           body : {
@@ -356,8 +376,10 @@ function disconnectUser(socket, socket_id, message, reset_socket_id, want_to_emi
     if(reset_socket_id)
     {
       dbo.collection('user').updateOne({socket_id : socket_id}, {$set : {socket_id : ""}},{}, function(err) {
-        if(err) console.log(err);
-        if(want_to_emit)
+        if(err) {
+
+        }
+        else if(want_to_emit)
         {
           io.to(socket_id).emit('disconnectUser', {
             success : true,
@@ -395,10 +417,15 @@ function CheckAndCreateCharacter(data, socket)
         }});
   } else {
     dbo.collection('user').findOne({socket_id : socket.id}, function(err, val) {
-      if (err) console.log(err);
-      if(val == null)
+      if (err) {
+        socket.emit('createCharacterResult', {
+            success : false,
+            body : {
+              message : err
+            }});
+      }
+      else if(val == null)
       {
-        console.log("Connecté à aucun compte.");
         socket.emit('createCharacterResult', {
             success : false,
             body : {
@@ -408,13 +435,19 @@ function CheckAndCreateCharacter(data, socket)
         var newCharacter = CreateCharacter(val.character_list.length, data.name, data.classId);
         newCharacter.user_id = val._id.toString();
         dbo.collection('user').updateOne(val, {$push : {character_list : newCharacter}},{}, function(err, _success) {
-          if(err) console.log(err);
-          console.log(val.character_list);
-          socket.emit('createCharacterResult', {
-              success : true,
-              body : {
-                message : "Character created."
-              }});
+          if(err) {
+            socket.emit('createCharacterResult', {
+                success : false,
+                body : {
+                  message : err
+                }});
+          }else {
+            socket.emit('createCharacterResult', {
+                success : true,
+                body : {
+                  message : "Character created."
+                }});
+          }
         });
       }
     });
@@ -454,8 +487,6 @@ function GetAllMyCharacters(data, socket)
 {
   dbo.collection('user').findOne({socket_id : socket.id}, {projection : {_id : 0, character_list : 1}}, function(err, val) {
     if(err) {
-      console.log(err);
-      console.log("Can't get all character.");
       socket.emit('getAllMyCharactersResult', {
           success : false,
           body : {
@@ -478,8 +509,6 @@ function GetAllMyCharacters(data, socket)
           test.push(lcharacter);
 
         })
-        console.log("Get all my characters");
-        console.log(test);
         socket.emit('getAllMyCharactersResult', {
             success : true,
             body : {
@@ -613,7 +642,6 @@ function GetAllHubs(data, socket)
             message : err
           }});
     } else {
-      console.log(res);
       if(res == undefined || res.length == 0)
       {
         socket.emit('getAllHubsResult', {
@@ -1113,9 +1141,7 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
                 }
               }
             });
-            console.log("===============CharacterList=================");
-            console.log(CharacterList);
-            console.log("===============Fin=================");
+
             io.to(channelName).emit('getAllUserOfRoom', {
                 success : true,
                 body : {
@@ -1131,7 +1157,6 @@ function BroadcastRoomCharacterChanged(_hubId,_roomId)
 }
 
 function RemoveRoom(_hubId,_roomId) {
-  console.log("je vais la remove");
   dbo.collection('hub').updateOne({id : _hubId},{$pull: { rooms_list: { id : _roomId } }}, function(errUpdateHub) {
     if(errUpdateHub)
     {
@@ -1361,11 +1386,9 @@ function UpdateAllBossAttackInterval(deltatime)
               {
                 LaunchBossAttack(_hub, _room);
                 dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.boss.current_cooldown_attack': _room.boss.cooldown_value}}, function(errUpdateHub) {
-                  console.log("Reset cooldown to " + _room.boss.cooldown_value);
                 });
               } else { // decrease cool down
                 dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.boss.current_cooldown_attack': lnewCoolDown}}, function(errUpdateHub) {
-                  console.log("decrease cooldown to " + lnewCoolDown);
                 });
               }
             }
@@ -1383,7 +1406,6 @@ function FightIsFinished(_hub, _room, _victory)
   if(_victory)
   {
     dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2, 'rooms_list.$.boss.life' : 0}}, function(errUpdateHub) {
-      console.log("Players win!!!");
     });
     io.to(channelName).emit('fightIsFinished', {
       body : {
@@ -1391,7 +1413,6 @@ function FightIsFinished(_hub, _room, _victory)
       }});
   } else {
     dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : { 'rooms_list.$.state': 2}}, function(errUpdateHub) {
-      console.log("The boss win!!!");
     });
     io.to(channelName).emit('fightIsFinished', {
       body : {
@@ -1480,9 +1501,6 @@ function LaunchBossAttack(_hub, _room)
       });
       /*
       */
-      console.log('---------------Character list--------------------');
-      console.log(CharacterList);
-      console.log('---------------/Character list/--------------------');
       io.to(channelName).emit('applyDamageToRoomCharacters', {
           body : {
             obj : CharacterList
@@ -1648,7 +1666,6 @@ function LaunchAbility(socket, user, character, hub, room, ability)
     }
     i++;
   }
-  console.log("I have to use ability");
   switch (ability.effect) {
     case 0:
       character.abilities
