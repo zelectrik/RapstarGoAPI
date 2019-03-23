@@ -1614,18 +1614,30 @@ function UseCharacterAbility(data, socket)
 
 function LaunchAbility(socket, user, character, hub, room, ability)
 {
+  var updatedAbilities = character.abilities;
+  var i = 0;
+  for (let _ability of updatedAbilities)
+  {
+    if(_ability.id == ability.id)
+    {
+      updatedAbilities[i].lastTimeUsed = Date.now();
+      break;
+    }
+    i++;
+  }
   console.log("I have to use ability");
   switch (ability.effect) {
     case 0:
-      var damageToApply = character.damage * ability.effectMultiplier;
-      var remainingBossLife = room.boss.life - damageToApply;
-      dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : character.id, 'character_list.abilities.id' : ability.id }, {$set  : {'character_list.$.lastTimeUsed' : Date.now()}}, function(errUpdateUser) {
+      character.abilities
+      dbo.collection('user').updateOne({_id : new ObjectID(user._id), 'character_list.id' : character.id }, {$set  : {'character_list.$.abilities' : updatedAbilities}}, function(errUpdateUser) {
         socket.emit('useCharacterAbilityResult', {
             success : true,
             body : {
               message : "Success"
         }});
       });
+      var damageToApply = character.damage * ability.effectMultiplier;
+      var remainingBossLife = room.boss.life - damageToApply;
       if(remainingBossLife <= 0)
       {
         FightIsFinished(hub, room, true);
