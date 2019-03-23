@@ -1587,7 +1587,14 @@ function UseCharacterAbility(data, socket)
                           message : errorHub
                         }});
                   } else {
-                    if(hub.id == undefined)
+                    if(hub == null)
+                    {
+                      socket.emit('useCharacterAbilityResult', {
+                          success : false,
+                          body : {
+                            message : "Hub connected to doesn't exist"
+                          }});
+                    } else if(hub.id == undefined)
                     {
                       socket.emit('useCharacterAbilityResult', {
                           success : false,
