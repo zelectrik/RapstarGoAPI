@@ -1404,7 +1404,7 @@ function SetBossLife(_hub, _room, _life)
       {
 
       } else {
-        io.to(channelName).emit('fightIsLaunched', {
+        io.to(channelName).emit('bossTakeDamage', {
           body : {
             boss_life : _life
           }});
