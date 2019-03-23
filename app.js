@@ -1022,7 +1022,7 @@ function JoinRoom(data, socket)
                           socket.emit('joinRoomResult', {
                               success : true,
                               body : {
-                                obj : {id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
+                                obj : wantedRoom,//{id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
                                 message : "Success"
                               }});
                           BroadcastRoomCharacterChanged(user.id_current_hub, data.roomId);
