@@ -1400,7 +1400,7 @@ function SetBossLife(_hub, _room, _life)
   var channelName = RoomChannelPrefix + _room.id.toString();
 
     dbo.collection('hub').updateOne({id : _hub.id, 'rooms_list.id' : _room.id},{$set : {'rooms_list.$.boss.life' : _life}}, function(errUpdateHub) {
-      io.to(channelName).emit('bossTakeDamage', {
+      io.to(channelName).emit('fightIsLaunched', {
         body : {
           boss_life : _life
         }});
