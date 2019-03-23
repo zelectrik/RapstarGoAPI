@@ -1022,7 +1022,7 @@ function JoinRoom(data, socket)
                           socket.emit('joinRoomResult', {
                               success : true,
                               body : {
-                                obj : wantedRoom,//{id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner },
+                                obj : {id : wantedRoom.id, user_id_owner : wantedRoom.user_id_owner, boss : {life : wantedRoom.boss.life, damage_per_attack : wantedRoom.boss.damage_per_attack, cooldown_value : wantedRoom.boss.cooldown_value} },
                                 message : "Success"
                               }});
                           BroadcastRoomCharacterChanged(user.id_current_hub, data.roomId);
